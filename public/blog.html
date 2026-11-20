@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang='zh-CN'>
+<head>
+<meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>博客 · 刘涛 Todd</title>
+<style>
+/* 布局：线框内居中，列表占满框宽，日期-标题-摘要 */
+:root{--bg:#FFFFFF;--fg:#111111;--mute:#6B6B72;--line:#E4E4E7;--card:#FFFFFF;--soft:#F7F7F8;--accent:#111111;--w:72rem;--mono:'Geist Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--sans:'Geist','PingFang SC','Noto Sans SC','Microsoft YaHei',-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme='light']){--bg:#0B0B0D;--fg:#F2F2F3;--mute:#9A9AA2;--line:#26262B;--card:#101013;--soft:#16161A;--accent:#F2F2F3;color-scheme:dark}}
+:root[data-theme='dark']{--bg:#0B0B0D;--fg:#F2F2F3;--mute:#9A9AA2;--line:#26262B;--card:#101013;--soft:#16161A;--accent:#F2F2F3;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:17px;line-height:1.8;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.frame{width:100%;max-width:var(--w);margin:0 auto;border-left:1px solid var(--line);border-right:1px solid var(--line);min-height:100vh}
+.pad{padding-left:clamp(18px,4vw,56px);padding-right:clamp(18px,4vw,56px)}
+.bar{display:flex;justify-content:space-between;align-items:center;height:60px;border-bottom:1px solid var(--line);font-size:15.5px;gap:16px}
+.bar a{text-decoration:none}.bar nav{display:flex;gap:22px;color:var(--mute)}.bar nav a:hover,.bar nav .on{color:var(--fg)}
+main{padding-top:48px;padding-bottom:80px}
+.kicker{font-family:var(--mono);font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin:0}
+h1{font-size:clamp(2.2rem,5vw,3.2rem);letter-spacing:-.04em;margin:10px 0 0;font-weight:600}
+.lead{color:var(--mute);margin:12px 0 28px;font-size:1.05rem}
+.posts{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.posts li{border-bottom:1px solid var(--line)}
+.posts a{display:grid;grid-template-columns:120px minmax(0,1fr) 24px;gap:24px;align-items:baseline;padding:24px 0;text-decoration:none}
+.posts a:hover h3{text-decoration:underline;text-underline-offset:4px}
+.date{font-family:var(--mono);font-size:13.5px;color:var(--mute)}
+.posts h3{margin:0;font-size:20px;font-weight:600;line-height:1.5}
+.posts p{margin:6px 0 0;font-size:15.5px;color:var(--mute);line-height:1.75}
+@media (max-width:700px){.posts a{grid-template-columns:1fr;gap:4px}}
+</style>
+<link rel='stylesheet' href='/theme.css'>
+</head>
+<body>
+<div class='frame'>
+<div class='bar pad'><a href='/'>← 刘涛 Todd</a><nav><a href='/'>首页</a><a href='/courses'>课程</a><a class='on' href='/blog'>博客</a><a href='/chat'>聊聊</a></nav></div>
+<main class='pad'>
+<p class='kicker'>Blog</p>
+<h1>博客</h1>
+<p class='lead' id='cnt'>加载中…</p>
+<ul class='posts' id='list'></ul>
+</main>
+</div>
+<script>
+(function(){
+  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+  fetch('/api/posts',{cache:'no-store'}).then(function(r){return r.json()}).then(function(l){
+    document.getElementById('cnt').textContent=l.length?('共 '+l.length+' 篇，按时间倒序。'):'博客整理中，很快更新。';
+    document.getElementById('list').innerHTML=l.map(function(a){return '<li><a href="/post/'+encodeURIComponent(a.id)+'"><span class="date">'+esc(a.date||'')+'</span><div><h3>'+esc(a.title)+'</h3>'+(a.summary?'<p>'+esc(a.summary)+'</p>':'')+'</div><span class="date">→</span></a></li>'}).join('');
+  }).catch(function(){document.getElementById('cnt').textContent='加载失败，请刷新重试。'});
+})();
+</script>
+<script src='/theme.js'></script>
+</body>
+</html>

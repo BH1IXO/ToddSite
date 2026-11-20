@@ -1,0 +1,35 @@
+:root[data-palette='ocean'][data-mode='light']{--bg:#F5F9FC;--fg:#0B2540;--mute:#5B7189;--line:#D5E3EF;--card:#FFFFFF;--soft:#E9F1F8;--accent:#0A6CBF}
+:root[data-palette='ocean'][data-mode='dark']{--bg:#07131F;--fg:#E6F1FB;--mute:#8FA7BD;--line:#183247;--card:#0B1B2B;--soft:#0F2338;--accent:#4DA3E8}
+:root[data-palette='forest'][data-mode='light']{--bg:#F6F8F3;--fg:#1B2A1E;--mute:#66756A;--line:#DCE5D8;--card:#FFFFFF;--soft:#EAF0E5;--accent:#2F7D4F}
+:root[data-palette='forest'][data-mode='dark']{--bg:#0C130E;--fg:#E8F1E9;--mute:#93A596;--line:#1F3023;--card:#111C14;--soft:#16251A;--accent:#5CBF80}
+:root[data-palette='sunset'][data-mode='light']{--bg:#FFF8F2;--fg:#2B1A12;--mute:#8A6F60;--line:#F0DDD0;--card:#FFFFFF;--soft:#FBEBDF;--accent:#E4572E}
+:root[data-palette='sunset'][data-mode='dark']{--bg:#17100C;--fg:#FBEEE5;--mute:#B39786;--line:#342219;--card:#1F1510;--soft:#2A1B13;--accent:#FF8A5C}
+:root[data-palette='violet'][data-mode='light']{--bg:#F8F6FD;--fg:#1F1635;--mute:#72668F;--line:#E3DCF3;--card:#FFFFFF;--soft:#EFEAFA;--accent:#6B3FD4}
+:root[data-palette='violet'][data-mode='dark']{--bg:#100B1C;--fg:#EEE9FB;--mute:#A096BD;--line:#2A2040;--card:#171027;--soft:#20173A;--accent:#A58BFF}
+:root[data-palette='paper'][data-mode='light']{--bg:#F4EFE6;--fg:#2A2318;--mute:#7A6E5C;--line:#DDD3C0;--card:#FBF8F1;--soft:#EAE2D2;--accent:#8A5A2B}
+:root[data-palette='paper'][data-mode='dark']{--bg:#1A160F;--fg:#EFE7D6;--mute:#A89C86;--line:#342D20;--card:#221D14;--soft:#2C261A;--accent:#D2A268}
+:root[data-palette='paper']{--sans:Georgia,'Songti SC','Noto Serif SC','Source Han Serif SC',serif}
+.theme-fab{position:fixed;right:16px;bottom:16px;z-index:50;display:flex;flex-direction:column;align-items:flex-end;gap:8px;font-family:var(--sans)}
+.tf-btn{font:inherit;font-size:12px;cursor:pointer;color:var(--bg);background:var(--fg);border:1px solid var(--fg);border-radius:999px;padding:6px 14px}
+.tf-panel{background:var(--card,var(--bg));border:1px solid var(--line);border-radius:8px;padding:8px;display:grid;gap:4px;min-width:150px;box-shadow:0 10px 30px -12px rgba(0,0,0,.35)}
+.tf-panel[hidden]{display:none}
+.tf-opt{font:inherit;font-size:12.5px;cursor:pointer;color:var(--fg);background:transparent;border:1px solid transparent;border-radius:4px;padding:5px 8px;display:flex;align-items:center;gap:8px;text-align:left}
+.tf-opt:hover{border-color:var(--line)}
+.tf-opt.on{border-color:var(--fg)}
+.tf-opt i{width:12px;height:12px;border-radius:50%;display:inline-block;border:1px solid var(--line)}
+.tf-row{display:flex;gap:4px;margin-top:6px;border-top:1px solid var(--line);padding-top:8px}
+.tf-row .tf-opt{flex:1;justify-content:center;padding:4px 6px}
+
+/* 主题强调色 */
+a:hover{color:var(--accent,inherit)}
+.kicker,.dir .tag,.card .idx,.life .idx,.idx,.facts .k,.contact-list .k{color:var(--accent,var(--mute))!important}
+.card:hover,.mini li:hover,.proj:hover .vis,.dir:hover{border-color:var(--accent,var(--fg))!important}
+.chips li,.tags span{border-color:var(--accent,var(--line))!important}
+.btn:hover,.chat-in button,.m.me,.quick button:hover{background:var(--accent,var(--fg));color:var(--bg);border-color:var(--accent,var(--fg))}
+.btn.solid:hover{background:transparent;color:var(--accent,var(--fg))}
+.chat-in button{background:var(--accent,var(--fg))!important;border-color:var(--accent,var(--fg))!important}
+.m.me{background:var(--accent,var(--fg))!important}
+.hero h1,h1{border-left:0}
+.dirs{border-top:2px solid var(--accent,var(--line))}
+.bar nav .on{color:var(--accent,var(--fg))!important}
+.tf-btn{background:var(--accent,var(--fg))!important;border-color:var(--accent,var(--fg))!important}

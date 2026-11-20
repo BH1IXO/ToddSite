@@ -1,0 +1,9 @@
+{
+  "name": "todd-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "刘涛个人主页，内容通过密码后台维护",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" }
+}

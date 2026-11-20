@@ -1,0 +1,518 @@
+{
+  "profile": {
+    "name": "刘涛",
+    "alias": "Todd",
+    "headline": "用 AI，把想法真正做进业务里。",
+    "intro": "世纪互联副总裁兼产品总经理，Zen7 Labs 联合创始人。近二十年技术产品经验，从开源与基础软件、云与区块链，一路做到 AI。写代码，也带团队，也进客户现场。",
+    "avatar": ""
+  },
+  "facts": [
+    {
+      "k": "现任",
+      "v": "世纪互联 · 副总裁 / 产品总经理"
+    },
+    {
+      "k": "创办",
+      "v": "Zen7 Labs · 联合创始人"
+    },
+    {
+      "k": "著作",
+      "v": "《Web3 产品经理必修课》"
+    },
+    {
+      "k": "教学",
+      "v": "上海财经大学 · 兼职硕士生导师"
+    },
+    {
+      "k": "内容",
+      "v": "全平台同名：刘涛Todd"
+    }
+  ],
+  "workAreas": [
+    {
+      "key": "FDE",
+      "title": "FDE · 进到现场做 AI 改造",
+      "desc": "Forward Deployed Engineer 的方式：不在会议室里讲方案，直接坐进客户的业务团队，从真实流程里找出 AI 该站的位置。",
+      "points": [
+        "流程诊断",
+        "试点选择",
+        "从 0 到 1 做出来",
+        "沉淀成可复制的模板"
+      ],
+      "kind": "工作",
+      "items": []
+    },
+    {
+      "key": "GEO",
+      "title": "GEO · 生成式引擎优化",
+      "desc": "Vigilath 做的事：检测、审计、优化并持续监控品牌在 ChatGPT、DeepSeek、豆包、通义、文心、元宝等生成式引擎里的呈现。用户开始用 AI 提问，品牌要在答案里被正确说到。",
+      "points": [
+        "品牌可见性检测",
+        "引用来源审计",
+        "内容优化",
+        "持续监控"
+      ],
+      "kind": "产品",
+      "items": [
+        {
+          "name": "Vigilath",
+          "desc": "端到端的 AI 搜索可见性平台：检测、审计、优化并持续监控生成式引擎如何提到你的品牌。",
+          "url": "https://github.com/Zen7-Labs/Vigilath",
+          "tags": [
+            "GEO",
+            "Python",
+            "TypeScript"
+          ],
+          "status": "在做"
+        }
+      ]
+    },
+    {
+      "key": "AI-Native APP",
+      "title": "AI-Native App",
+      "desc": "从产品定义开始就按 AI 原生来设计的应用，而不是给旧产品加一个对话入口。",
+      "points": [
+        "ChatGPT 应用",
+        "Agent 协作平台",
+        "MCP 工具接入",
+        "Agent 支付"
+      ],
+      "kind": "产品",
+      "items": [
+        {
+          "name": "Zen7 Agentic Commerce",
+          "desc": "面向 D2C 品牌的智能体协作平台，整合 AI 认知、自动化与数据智能。",
+          "url": "https://github.com/Zen7-Labs/Zen7-Agentic-Commerce",
+          "tags": [
+            "Agentic Commerce",
+            "D2C"
+          ],
+          "status": "做过"
+        },
+        {
+          "name": "PetPals",
+          "desc": "ChatGPT 应用：用对话找宠物玩具和用品。",
+          "url": "https://github.com/Zen7-Labs/PetPals",
+          "tags": [
+            "ChatGPT App"
+          ],
+          "status": "做过"
+        },
+        {
+          "name": "Dotdot",
+          "desc": "AI 个人助理：DeepSeek V3 对话，长期记忆（MemMachine 语义检索），知识库支持 PDF 与图片 OCR，多用户登录，可联网搜索。",
+          "url": "https://github.com/BH1IXO/Dotdot",
+          "tags": [
+            "DeepSeek",
+            "记忆",
+            "知识库"
+          ],
+          "status": "做过"
+        },
+        {
+          "name": "ResumeAaaS",
+          "desc": "AI 简历优化 SaaS：调用 Kimi 给简历打分，输出优缺点与改写建议，带登录、每日限额和升级页。",
+          "url": "https://github.com/BH1IXO/ResumeAaaS",
+          "tags": [
+            "Next.js",
+            "Kimi",
+            "SaaS"
+          ],
+          "status": "做过"
+        },
+        {
+          "name": "SalesM",
+          "desc": "销售管理平台：8 阶段销售漏斗（线索到赢单/输单），管理客户、竞品、渠道、团队、知识库和费用。",
+          "url": "https://github.com/BH1IXO/SalesM",
+          "tags": [
+            "React",
+            "Node",
+            "CRM"
+          ],
+          "status": "做过"
+        },
+        {
+          "name": "HennessyNight",
+          "desc": "智能会议纪要系统后端：实时转写、声纹识别说话人，DeepSeek 生成纪要。",
+          "url": "https://github.com/BH1IXO/HennessyNight",
+          "tags": [
+            "声纹识别",
+            "DeepSeek",
+            "Express"
+          ],
+          "status": "做过"
+        },
+        {
+          "name": "ReciteWords",
+          "desc": "背单词应用：按 1/3/7/14/30 天间隔做记忆复习，翻卡学习并记录学习日志。",
+          "url": "https://github.com/BH1IXO/ReciteWords",
+          "tags": [
+            "Next.js",
+            "Prisma"
+          ],
+          "status": "做过"
+        }
+      ]
+    },
+    {
+      "key": "Web3",
+      "title": "Web3 · 从基础设施到产品方法",
+      "desc": "做过云平台与区块链基础设施，把这一段的产品经验写成了《Web3 产品经理必修课》。现在做的是 Web3 与 AI 的交叉：去中心化支付 Agent。",
+      "points": [
+        "联盟链与底层",
+        "DePA 支付 Agent",
+        "通证与产品设计",
+        "方法论输出"
+      ],
+      "kind": "工作",
+      "items": [
+        {
+          "name": "MoltsPay",
+          "desc": "面向 AI Agent 的区块链支付基础设施，另有 Python 版本和 AutoGPT 插件。",
+          "url": "https://github.com/Zen7-Labs/moltspay",
+          "tags": [
+            "Agent 支付",
+            "Blockchain"
+          ],
+          "status": "做过"
+        },
+        {
+          "name": "Zen7 Payment Agent",
+          "desc": "DePA（去中心化支付 Agent）的首个实现，探索下一代智能支付基础设施。",
+          "url": "https://github.com/Zen7-Labs/Zen7-Payment-Agent",
+          "tags": [
+            "DePA",
+            "Agent"
+          ],
+          "status": "做过"
+        },
+        {
+          "name": "MCP Sepolia Demo",
+          "desc": "基于 MCP 的以太坊 Sepolia 测试网服务示例。",
+          "url": "https://github.com/BH1IXO/mcp_sepolia_demo",
+          "tags": [
+            "MCP",
+            "Ethereum"
+          ],
+          "status": "做过"
+        }
+      ]
+    },
+    {
+      "key": "推理优化",
+      "title": "推理优化",
+      "desc": "把模型跑得又快又省：模型选型、量化、缓存、路由、批处理，在真实业务成本约束下找到能上线的配置。",
+      "points": [
+        "模型选型",
+        "量化与压缩",
+        "缓存与路由",
+        "成本测算"
+      ],
+      "kind": "工作",
+      "items": []
+    },
+    {
+      "key": "算力专区",
+      "title": "算力专区",
+      "desc": "从 GPU 资源到 AI 基础设施的产品化：算力怎么被组织、被调度、被打包成企业能买得起也用得上的形态。",
+      "points": [
+        "GPU 资源",
+        "算力调度",
+        "AI 基础设施产品化",
+        "面向企业的交付"
+      ],
+      "kind": "工作",
+      "items": []
+    }
+  ],
+  "projects": [],
+  "courses": {
+    "title": "Vibe Coding：超级个体操作系统",
+    "intro": "20 讲系列课程，从意图工程到职业护城河。",
+    "lessons": [
+      {
+        "no": 1,
+        "title": "Vibe Coding的本质——意图工程",
+        "points": [
+          "Vibe Coding 的起源与定义",
+          "\"意图工程\"的核心概念",
+          "五种开发模式详解（UAM/ICCM/PDM/TDM/CEM）",
+          "五级自主程度（L1-L5）",
+          "\"上下文动量\"现象及应对"
+        ]
+      },
+      {
+        "no": 2,
+        "title": "超级个体的三大核心能力",
+        "points": [
+          "什么是\"超级个体\"",
+          "问题定义力：看见真实问题",
+          "系统构建力：连贯的产品思维",
+          "流量获取力：注意力工程",
+          "三种能力如何相互支撑"
+        ]
+      },
+      {
+        "no": 3,
+        "title": "工具选择的降维策略",
+        "points": [
+          "AI 编程工具的分类框架",
+          "主流工具的核心差异",
+          "如何根据场景选择工具",
+          "避免\"工具收集癖\"",
+          "建立你的主力工具组合"
+        ]
+      },
+      {
+        "no": 4,
+        "title": "组合工作流、MCP协议与Agent Skills",
+        "points": [
+          "为什么单一工具不够用",
+          "组合工作流的设计思路",
+          "代码安全：检查点与回滚",
+          "MCP协议：给AI装上\"手\"和\"眼\"",
+          "Agent Skills：给AI装上\"专业知识\""
+        ]
+      },
+      {
+        "no": 5,
+        "title": "安全编码与风险防控",
+        "points": [
+          "AI生成代码的安全风险",
+          "斯坦福 Secure Vibe Coding 要点",
+          "常见漏洞类型及防范",
+          "自动化审计工具链",
+          "\"判断债务\"的识别与应对"
+        ]
+      },
+      {
+        "no": 6,
+        "title": "Prompt Engineering深度指南",
+        "points": [
+          "Prompt的底层原理",
+          "结构化提示的设计方法",
+          "上下文管理技巧",
+          "迭代优化策略",
+          "语音编程入门"
+        ]
+      },
+      {
+        "no": 7,
+        "title": "实战一——Chrome插件开发",
+        "points": [
+          "Chrome插件的基本结构",
+          "从0到1开发一个实用插件",
+          "调试和测试技巧",
+          "打包并发布到Chrome商店",
+          "完成你的第一个可发布产品"
+        ]
+      },
+      {
+        "no": 8,
+        "title": "实战二——全栈Web应用",
+        "points": [
+          "Next.js项目搭建",
+          "数据库集成（Prisma + SQLite）",
+          "API路由设计",
+          "前后端交互",
+          "部署到Vercel"
+        ]
+      },
+      {
+        "no": 9,
+        "title": "实战三——SaaS产品",
+        "points": [
+          "SaaS产品的完整架构",
+          "用户认证系统集成（Clerk）",
+          "AI API调用与集成（OpenAI）",
+          "支付流程基础概念（Stripe）",
+          "Vibe Coding的边界在哪里"
+        ]
+      },
+      {
+        "no": 10,
+        "title": "从玩具到生产的四重阶梯",
+        "points": [
+          "四个阶段的定义和特点",
+          "每个阶段的质量标准",
+          "如何判断该进入下一阶段",
+          "每个阶段的Vibe策略",
+          "真实案例分析"
+        ]
+      },
+      {
+        "no": 11,
+        "title": "Spec Coding——Vibe的安全带",
+        "points": [
+          "什么是Spec Coding",
+          "何时需要从Vibe切换到Spec",
+          "如何将对话转为技术规范",
+          "API设计规范的自动化",
+          "代码可验证性原则"
+        ]
+      },
+      {
+        "no": 12,
+        "title": "质量保障三道防线",
+        "points": [
+          "质量保障的三道防线",
+          "AI辅助编写单元测试",
+          "E2E测试实战",
+          "监控和告警配置",
+          "Debug四步法"
+        ]
+      },
+      {
+        "no": 13,
+        "title": "部署上线全流程",
+        "points": [
+          "部署平台选择策略",
+          "Vercel部署实战",
+          "Railway部署实战",
+          "域名和HTTPS配置",
+          "上线检查清单"
+        ]
+      },
+      {
+        "no": 14,
+        "title": "团队协作与企业应用",
+        "points": [
+          "个人项目vs企业项目的差异",
+          "团队AI使用规范制定",
+          "代码审查流程",
+          "GitHub工作流最佳实践",
+          "安全边界红线"
+        ]
+      },
+      {
+        "no": 15,
+        "title": "需求挖掘与MVP验证",
+        "points": [
+          "Vibe Coding最大的陷阱",
+          "社群渗透法找需求",
+          "付费意愿的四个信号",
+          "截图测试验证法",
+          "3天冷启动验证流程"
+        ]
+      },
+      {
+        "no": 16,
+        "title": "增长黑客与冷启动",
+        "points": [
+          "冷启动三阶段模型",
+          "平台寄生策略",
+          "各平台内容打法",
+          "魔法时刻设计",
+          "内容飞轮效应"
+        ]
+      },
+      {
+        "no": 17,
+        "title": "四种变现路径与出海",
+        "points": [
+          "四种主要变现路径",
+          "SaaS定价策略",
+          "Stripe支付集成",
+          "出海市场策略",
+          "Product Hunt发布"
+        ]
+      },
+      {
+        "no": 18,
+        "title": "一人公司的法律与财务",
+        "points": [
+          "个体户vs公司的选择",
+          "AI扶持政策利用",
+          "开源许可证风险",
+          "个人品牌与公司分离",
+          "跨境收入税务基础"
+        ]
+      },
+      {
+        "no": 19,
+        "title": "技术IP的破圈方法论",
+        "points": [
+          "为什么要做个人品牌",
+          "多平台内容矩阵策略",
+          "信任漏斗模型",
+          "Build in Public方法",
+          "IP升级路径"
+        ]
+      },
+      {
+        "no": 20,
+        "title": "Agentic Engineering与职业护城河",
+        "points": [
+          "从Vibe Coding到Agentic Engineering",
+          "多Agent协作框架",
+          "人类在AI系统中的位置",
+          "职业护城河的三层架构",
+          "课程总结与行动计划"
+        ]
+      }
+    ]
+  },
+  "articles": [],
+  "life": [
+    {
+      "title": "音乐创作",
+      "desc": "写歌、编曲、玩声音。和做产品一样，都是从一堆素材里找出一个值得留下的结构。"
+    },
+    {
+      "title": "教儿子做产品设计",
+      "desc": "把产品思维拆成孩子能懂的方式：先问要解决谁的什么问题，再问怎么做得出来。"
+    },
+    {
+      "title": "游戏与手工",
+      "desc": "玩游戏也做游戏，做手工也拆手工。动手的过程比结论更有意思。"
+    }
+  ],
+  "offers": [
+    {
+      "title": "企业 AI 改造",
+      "desc": "进到业务现场，找到 AI 在流程里该站的位置，并把试点做出来。",
+      "price": ""
+    },
+    {
+      "title": "产品与技术顾问",
+      "desc": "产品规划、技术选型、团队搭建，按月陪跑。",
+      "price": ""
+    },
+    {
+      "title": "演讲与培训",
+      "desc": "企业内训与高管工作坊，讲 AI 落地里真正难的部分。",
+      "price": ""
+    }
+  ],
+  "socials": [
+    {
+      "name": "小红书",
+      "handle": "刘涛Todd",
+      "url": ""
+    },
+    {
+      "name": "抖音",
+      "handle": "刘涛Todd",
+      "url": ""
+    },
+    {
+      "name": "B 站",
+      "handle": "刘涛Todd",
+      "url": ""
+    },
+    {
+      "name": "视频号",
+      "handle": "刘涛Todd",
+      "url": ""
+    }
+  ],
+  "contact": {
+    "email": "",
+    "wechat": "",
+    "github": [
+      "https://github.com/BH1IXO",
+      "https://github.com/Zen7-Labs"
+    ],
+    "note": "想聊 AI 落地、产品、合作，或者只是想找人一起判断方向，都可以直接找我。"
+  }
+}

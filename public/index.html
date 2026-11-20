@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang='zh-CN'>
+<head>
+<meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>刘涛 Todd</title>
+<meta name='description' content='刘涛（Todd），世纪互联副总裁兼产品总经理，Zen7 Labs 联合创始人。做 AI 产品、企业改造、Web3 与算力。'>
+<style>
+/* 布局：整页线框。内容宽 72rem，两侧 1px 竖线，分区 1px 横线。首屏左文右图，工作方向两列，课程三列，文章单列列表，生活三列，合作三列。 */
+:root{--bg:#FFFFFF;--fg:#111111;--mute:#6B6B72;--line:#E4E4E7;--card:#FFFFFF;--soft:#F7F7F8;--badge:rgba(0,0,0,.72);--badge-ink:#FFFFFF;--ease:cubic-bezier(.22,1,.36,1);--w:72rem;
+--mono:'Geist Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+--sans:'Geist','PingFang SC','Noto Sans SC','Microsoft YaHei',-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme='light']){--bg:#0B0B0D;--fg:#F2F2F3;--mute:#9A9AA2;--line:#26262B;--card:#101013;--soft:#16161A;--badge:rgba(255,255,255,.85);--badge-ink:#111111;color-scheme:dark}}
+:root[data-theme='dark']{--bg:#0B0B0D;--fg:#F2F2F3;--mute:#9A9AA2;--line:#26262B;--card:#101013;--soft:#16161A;--badge:rgba(255,255,255,.85);--badge-ink:#111111;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:15px;line-height:1.8;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--fg);outline-offset:3px}
+.frame{position:relative;width:100%;max-width:var(--w);margin:0 auto;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+.pad{padding-left:clamp(18px,3vw,40px);padding-right:clamp(18px,3vw,40px)}
+header.top{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line)}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:16px;height:56px}
+.logo{font-weight:600;letter-spacing:-.02em;text-decoration:none}
+nav{display:flex;gap:22px;font-size:14px}
+nav a{text-decoration:none;color:var(--mute)}
+nav a:hover{color:var(--fg)}
+section.sec{border-top:1px solid var(--line);padding-top:36px;padding-bottom:44px}
+section.sec:first-of-type{border-top:none}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin:0}
+h1{font-size:clamp(2.2rem,5vw,3.6rem);line-height:1.15;letter-spacing:-.04em;margin:14px 0 0;font-weight:600;text-wrap:balance}
+h2{font-size:26px;line-height:1.4;letter-spacing:-.045em;margin:12px 0 0;font-weight:600}
+.lead{color:var(--mute);margin:16px 0 0;max-width:34em}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;margin-bottom:26px}
+.head .lead{margin:0;max-width:26em;font-size:13px}
+.hero{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:48px;align-items:center;padding-top:24px}
+.hero-meta{font-family:var(--mono);font-size:12px;color:var(--mute);margin:0}
+.hero-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+.btn{display:inline-flex;align-items:center;font-size:13px;font-weight:500;text-decoration:none;border:1px solid var(--fg);border-radius:4px;padding:8px 18px;transition:background .25s var(--ease),color .25s var(--ease)}
+.btn.solid{background:var(--fg);color:var(--bg)}
+.btn:hover{background:var(--fg);color:var(--bg)}
+.btn.solid:hover{background:transparent;color:var(--fg)}
+.portrait{width:100%;aspect-ratio:1;border:1px solid var(--line);border-radius:4px;background:var(--soft);display:grid;place-items:center;overflow:hidden;font-size:96px;font-weight:600;letter-spacing:-.04em;color:var(--mute)}
+.portrait img{width:100%;height:100%;object-fit:cover}
+.facts{margin:36px 0 0;padding:0;list-style:none;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.facts li{padding:14px 16px 14px 0;border-bottom:1px solid var(--line);min-width:0}
+.facts .k{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--mute)}
+.facts .v{font-size:14px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+/* 工作方向 */
+/* 项目 */
+.mini{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin:10px 0 0;padding:0;list-style:none}
+.mini li{min-width:0;border:1px solid var(--line);border-radius:4px;background:var(--soft);padding:12px 14px;transition:border-color .25s var(--ease)}
+.mini li:hover{border-color:var(--fg)}
+.mini a{text-decoration:none;display:block}
+.mini b{display:block;font-size:13.5px;font-weight:600;letter-spacing:-.01em;overflow-wrap:anywhere}
+.mini p{margin:4px 0 0;font-size:12px;line-height:1.65;color:var(--mute)}
+.dirs{border-top:1px solid var(--line)}
+.dir{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.5fr);gap:clamp(20px,4vw,56px);padding:34px 0;border-bottom:1px solid var(--line)}
+.dir-l{min-width:0}
+.dir .tag{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--mute);text-transform:uppercase}
+.dir h3{margin:10px 0 0;font-size:20px;font-weight:600;letter-spacing:-.03em;line-height:1.45}
+.dir-l p{margin:10px 0 0;font-size:13.5px;line-height:1.8;color:var(--mute)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 0;padding:0;list-style:none}
+.chips li{font-family:var(--mono);font-size:10.5px;color:var(--mute);border:1px solid var(--line);border-radius:3px;padding:1px 7px}
+.dir-r{min-width:0}
+.dir-r .empty{margin:0;font-size:13px;color:var(--mute);border:1px dashed var(--line);border-radius:4px;padding:14px 16px}
+@media (max-width:860px){.dir{grid-template-columns:1fr;gap:18px}}
+.proj{display:flex;flex-direction:column;min-width:0;text-decoration:none}
+.proj .vis{position:relative;aspect-ratio:1.8;border:1px solid var(--line);border-radius:4px;background:var(--soft);overflow:hidden;display:flex;align-items:center;justify-content:center}
+.proj .vis .big{font-size:clamp(26px,3.4vw,38px);font-weight:600;letter-spacing:-.04em;color:var(--mute);padding:0 22px;text-align:center;overflow-wrap:anywhere;transition:transform .7s var(--ease)}
+.proj:hover .big{transform:scale(1.03)}
+.proj .no{position:absolute;top:14px;left:15px;font-family:var(--mono);font-size:10px;color:var(--badge-ink);background:var(--badge);border-radius:3px;padding:3px 8px}
+.proj .go{position:absolute;right:13px;bottom:13px;width:32px;height:32px;border-radius:50%;background:var(--bg);border:1px solid var(--line);display:grid;place-items:center;font-size:14px;transition:transform .3s var(--ease)}
+.proj:hover .go{transform:translate(3px,-3px)}
+.proj .copy{padding:16px 1px 0}
+.proj h3{margin:0;font-size:18px;font-weight:600;letter-spacing:-.03em;line-height:1.4}
+.proj p{margin:8px 0 0;font-size:13px;line-height:1.7;color:var(--mute)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.tags span{font-family:var(--mono);font-size:10.5px;color:var(--mute);border:1px solid var(--line);border-radius:3px;padding:1px 7px}
+/* 通用卡片 */
+.card{display:flex;flex-direction:column;min-width:0;border:1px solid var(--line);border-radius:4px;background:var(--card);transition:border-color .3s var(--ease),transform .3s var(--ease)}
+.card:hover{border-color:var(--fg);transform:translateY(-3px)}
+.card .idx{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--mute);padding:16px 18px 0}
+.card h3{margin:8px 0 0;padding:0 18px;font-size:17px;font-weight:500;line-height:1.5}
+.card ul{margin:10px 0 0;padding:0 18px;list-style:none;font-size:12.5px;line-height:1.75;color:var(--mute);flex:1}
+.card ul li{padding-left:12px;position:relative}
+.card ul li::before{content:'·';position:absolute;left:0}
+.card>p{margin:10px 0 0;padding:0 18px;font-size:13px;line-height:1.8;color:var(--mute);flex:1}
+.card .foot{margin-top:18px;border-top:1px solid var(--line);padding:12px 18px;font-family:var(--mono);font-size:12px;display:flex;justify-content:space-between;gap:12px}
+/* 文章 */
+.posts{border-top:1px solid var(--line);margin:0;padding:0;list-style:none}
+.posts li{border-bottom:1px solid var(--line)}
+.posts a,.posts .row{display:grid;grid-template-columns:110px minmax(0,1fr) auto;gap:24px;align-items:baseline;padding:18px 0;text-decoration:none}
+.posts a:hover h3{text-decoration:underline;text-underline-offset:4px}
+.posts .date{font-family:var(--mono);font-size:11.5px;color:var(--mute)}
+.posts h3{margin:0;font-size:17px;font-weight:500;letter-spacing:-.02em;line-height:1.5}
+.posts p{margin:4px 0 0;font-size:13px;line-height:1.7;color:var(--mute)}
+.posts .arrow{font-size:14px;color:var(--mute)}
+/* 生活 */
+.life{min-height:180px}
+.life .idx{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--mute);text-transform:uppercase}
+/* 联系 */
+.chat{border:1px solid var(--line);border-radius:6px;background:var(--card);overflow:hidden;margin-bottom:28px}
+.chat-top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--mute)}
+.chat-top b{color:var(--fg);font-weight:600}
+.msgs{height:min(420px,56vh);overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.m{max-width:85%;padding:10px 14px;border-radius:6px;font-size:14px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere}
+.m.bot{align-self:flex-start;background:var(--soft)}
+.m.me{align-self:flex-end;background:var(--fg);color:var(--bg)}
+.m.err{align-self:flex-start;color:var(--mute);border:1px dashed var(--line)}
+.quick{display:flex;flex-wrap:wrap;gap:8px;padding:0 16px 12px}
+.quick button{font:inherit;font-size:12.5px;cursor:pointer;color:var(--mute);background:transparent;border:1px solid var(--line);border-radius:4px;padding:4px 10px}
+.quick button:hover{color:var(--fg);border-color:var(--fg)}
+.chat-in{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--line)}
+.chat-in input{flex:1;min-width:0;font:inherit;font-size:14px;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:8px 12px}
+.chat-in button{font:inherit;font-size:13px;font-weight:500;cursor:pointer;color:var(--bg);background:var(--fg);border:1px solid var(--fg);border-radius:4px;padding:8px 18px}
+.chat-in button:disabled{opacity:.5;cursor:not-allowed}
+.contact-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));margin:28px 0 0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.contact-list li{display:flex;flex-direction:column;gap:2px;min-width:0;padding:14px 16px 14px 0;border-bottom:1px solid var(--line)}
+.contact-list .k{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--mute)}
+.contact-list .v{font-size:15px;overflow-wrap:anywhere}
+.contact-list a{text-underline-offset:3px}
+footer{border-top:1px solid var(--line);padding-top:22px;padding-bottom:40px;font-family:var(--mono);font-size:11.5px;color:var(--mute);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+footer a{text-underline-offset:3px}
+@media (max-width:860px){.hero{grid-template-columns:1fr}.portrait{max-width:200px}.grid2,.grid3{grid-template-columns:1fr}.posts a,.posts .row{grid-template-columns:1fr;gap:4px}}
+@media (max-width:760px){nav{display:none}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+body{font-size:17px}nav{font-size:15.5px}.lead{font-size:1.1rem}.head .lead{font-size:15px}.btn{font-size:15px;padding:10px 22px}.facts .v{font-size:16px}.mini b{font-size:15.5px}.mini p{font-size:14px}.dir-l p{font-size:15.5px}.dir h3{font-size:22px}.dir .tag,.kicker,.facts .k,.card .idx,.life .idx{font-size:12.5px}.card h3{font-size:19px}.card>p{font-size:15px}.contact-list .v{font-size:17px}.dir-r .empty{font-size:14.5px}.hero-meta{font-size:14px}.chips li{font-size:12px}</style>
+<link rel='stylesheet' href='/theme.css'>
+</head>
+<body>
+<header class='top'><div class='frame pad bar'>
+<a class='logo' href='#top'>刘涛 Todd</a>
+<nav><a href='#about'>介绍</a><a href='#work'>工作</a><a href='/courses'>课程</a><a href='/blog'>博客</a><a href='#life'>生活</a><a href='/chat'>聊聊</a></nav>
+</div></header>
+<main id='top' class='frame'>
+<section class='sec pad' id='about'><div id='hero'></div></section>
+<section class='sec pad' id='work'><div id='areas'></div></section>
+<section class='sec pad' id='life'><div id='life-box'></div></section>
+<section class='sec pad' id='services'><div id='offers'></div></section>
+<section class='sec pad' id='contact'><div id='contact-box'></div></section>
+<footer class='frame pad'><span id='foot'></span><a href='/admin'>登录管理</a></footer>
+</main>
+<script>
+(function(){
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function safeUrl(u){return /^https?:\/\//.test(u||'')?u:''}
+  function pad2(n){n=parseInt(n,10)||0;return (n<10?'0':'')+n}
+  var $=function(id){return document.getElementById(id)};
+
+  function renderHero(d){
+    var p=d.profile||{};
+    var facts=(d.facts||[]).map(function(f){return '<li><span class="k">'+esc(f.k)+'</span><span class="v">'+esc(f.v)+'</span></li>'}).join('');
+    var av=safeUrl(p.avatar)||((p.avatar||'').indexOf('/posts-img/uploads/')===0&&(p.avatar||'').indexOf('..')<0?p.avatar:'');
+    var pic=av?'<img src="'+esc(av)+'" alt="'+esc(p.name)+'">':esc((p.name||'').slice(0,1));
+    $('hero').innerHTML='<div class="hero"><div><p class="hero-meta">'+esc(p.name)+(p.alias?' / '+esc(p.alias):'')+'</p><h1>'+esc(p.headline)+'</h1><p class="lead">'+esc(p.intro)+'</p>'
+      +'<div class="hero-actions"><a class="btn solid" href="#work">看看我在做什么</a><a class="btn" href="#contact">跟我聊聊</a></div></div>'
+      +'<div class="portrait">'+pic+'</div></div>'
+      +(facts?'<ul class="facts">'+facts+'</ul>':'');
+  }
+
+  function renderAreas(d){
+    var list=d.workAreas||[];
+    if(!list.length){$('areas').innerHTML='';return}
+    var rows=list.map(function(a,i){
+      var pts=(a.points||[]).map(function(x){return "<li>"+esc(x)+"</li>"}).join('');
+      var its=(a.items||[]).map(function(it){
+        var u=safeUrl(it.url);
+        var inner="<b>"+esc(it.name)+(u?" ↗":"")+"</b>"+(it.desc?"<p>"+esc(it.desc)+"</p>":"");
+        return "<li>"+(u?"<a href='"+esc(u)+"' target='_blank' rel='noopener noreferrer'>"+inner+"</a>":"<div>"+inner+"</div>")+"</li>";
+      }).join('');
+      return "<article class=dir><div class=dir-l><span class=tag>"+pad2(i+1)+" / "+esc(a.key||'')+"</span><h3>"+esc(a.title)+"</h3><p>"+esc(a.desc)+"</p>"+(pts?"<ul class=chips>"+pts+"</ul>":"")+"</div><div class=dir-r>"+(its?"<ul class=mini>"+its+"</ul>":"<p class=empty>具体项目整理中</p>")+"</div></article>";
+    }).join('');
+    $('areas').innerHTML="<div class=head><div><p class=kicker>Done &amp; doing</p><h2>做过的和正在做的</h2></div><p class=lead>六个方向，一条主线：把 AI 从概念推到能上线、能算账的那一层。</p></div><div class=dirs>"+rows+"</div>";
+  }
+
+  function renderLife(d){
+    var list=d.life||[];
+    if(!list.length){$('life-box').innerHTML='';return}
+    var cards=list.map(function(x,i){
+      return '<div class="card life"><span class="idx">'+pad2(i+1)+'</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.desc)+'</p></div>';
+    }).join('');
+    $('life-box').innerHTML='<div class="head"><div><p class="kicker">Life</p><h2>工作之外</h2></div><p class="lead">这些也是我的一部分，不少想法反而是从这里来的。</p></div><div class="grid3">'+cards+'</div>';
+  }
+
+  function renderOffers(d){
+    var os=d.offers||[];
+    if(!os.length){$('offers').innerHTML='';return}
+    var tiles=os.map(function(o,i){
+      return '<div class="card"><span class="idx">'+pad2(i+1)+' / 合作</span><h3>'+esc(o.title)+'</h3><p>'+esc(o.desc)+'</p><div class="foot"><span>'+esc(o.price||'')+'</span><a href="#contact">咨询 →</a></div></div>';
+    }).join('');
+    $('offers').innerHTML='<div class="head"><div><p class="kicker">Work with me</p><h2>可以怎么合作</h2></div><p class="lead">接的不多，但每一个都自己下场。</p></div><div class="grid3">'+tiles+'</div>';
+  }
+
+  function renderContact(d){
+    var c=d.contact||{},so=d.socials||[],rows=[];
+    if(c.email)rows.push(['邮箱',esc(c.email)]);
+    if(c.wechat)rows.push(['微信',esc(c.wechat)]);
+    (c.github||[]).forEach(function(u){var x=safeUrl(u);if(x)rows.push(['GitHub','<a href="'+esc(x)+'" target="_blank" rel="noopener noreferrer">'+esc(x.replace(/^https?:\/\/(www\.)?/,''))+'</a>'])});
+    var socialRows=so.map(function(s){
+      var x=safeUrl(s.url);
+      var v=esc(s.name)+' · '+esc(s.handle||'');
+      return '<li><span class="k">'+esc(s.name)+'</span><span class="v">'+(x?'<a href="'+esc(x)+'" target="_blank" rel="noopener noreferrer">'+esc(s.handle||x)+'</a>':esc(s.handle||'—'))+'</span></li>';
+    }).join('');
+    $('contact-box').innerHTML='<div class="head"><div><p class="kicker">Contact</p><h2>跟我聊聊</h2></div><p class="lead">'+esc(c.note)+'</p></div>'
+      +'<p style="margin:0 0 28px"><a class="btn solid" href="/chat">去和我的 AI 分身聊聊 →</a></p>'
+      +(rows.length?'<ul class="contact-list">'+rows.map(function(r){return '<li><span class="k">'+r[0]+'</span><span class="v">'+r[1]+'</span></li>'}).join('')+'</ul>':'')
+      +(socialRows?'<ul class="contact-list" style="margin-top:0;border-top:none">'+socialRows+'</ul>':'');
+    $('foot').textContent='© '+new Date().getFullYear()+' '+((d.profile&&d.profile.name)||'');
+  }
+
+  fetch('/api/site',{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){
+    renderHero(d);renderAreas(d);renderLife(d);renderOffers(d);renderContact(d);
+  }).catch(function(){$('hero').innerHTML='<h1>页面内容加载失败</h1><p class="lead">请刷新重试。</p>'});
+})();
+</script>
+<script src='/theme.js'></script>
+</body>
+</html>

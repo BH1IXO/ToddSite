@@ -1,0 +1,6 @@
+node_modules/
+data/backup/
+public/posts-img/uploads/
+.shots/
+.DS_Store
+.env

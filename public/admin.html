@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang='zh-CN'>
+<head>
+<meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='robots' content='noindex,nofollow'>
+<title>站点后台</title>
+<style>
+/* 布局：登录卡片 → 登录后顶部固定操作栏 + 单栏表单（个人介绍 / 事实 / 合作项 / 项目 / 联系） */
+:root{--bg:#FAF8F5;--fg:#1B1B1F;--mute:#6B6B73;--line:#E6E2DB;--card:#FFFFFF;--accent:#E4572E;--accent-ink:#FFFFFF;--ok:#2E7D32;--err:#C62828;
+--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+--sans:-apple-system,BlinkMacSystemFont,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme='light']){--bg:#131316;--fg:#EDEAE4;--mute:#9A9AA3;--line:#2A2A30;--card:#1B1B20;--accent:#FF7A52;--accent-ink:#1B1B1F;--ok:#66BB6A;--err:#EF5350;color-scheme:dark}}
+:root[data-theme='dark']{--bg:#131316;--fg:#EDEAE4;--mute:#9A9AA3;--line:#2A2A30;--card:#1B1B20;--accent:#FF7A52;--accent-ink:#1B1B1F;--ok:#66BB6A;--err:#EF5350;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:15px;line-height:1.7}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:820px;margin:0 auto;padding:0 max(20px,env(safe-area-inset-left,0px))}
+h1{font-size:1.4rem;margin:0 0 6px}
+.mute{color:var(--mute);font-size:.88rem}
+.login{max-width:380px;margin:18vh auto 0;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:28px}
+label{display:block;font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;color:var(--mute);margin:14px 0 4px}
+input,textarea{width:100%;font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:8px 10px}
+textarea{min-height:84px;resize:vertical}
+button{font:inherit;cursor:pointer;border-radius:5px;border:1px solid var(--line);background:var(--card);color:var(--fg);padding:7px 14px}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+button.danger{color:var(--err)}
+.msg{min-height:1.4em;margin-top:12px;font-size:.88rem}
+.msg.ok{color:var(--ok)}.msg.err{color:var(--err)}
+.topbar{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--line);padding:12px 0}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.topbar .acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.topbar a{color:var(--mute);font-size:.88rem;text-underline-offset:3px}
+fieldset{border:1px solid var(--line);border-radius:8px;background:var(--card);margin:24px 0;padding:8px 20px 20px;min-width:0}
+legend{font-family:var(--mono);font-size:.78rem;letter-spacing:.1em;color:var(--accent);padding:0 8px}
+.row{display:grid;gap:8px;padding:12px;margin-top:12px;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+.row.facts-row{grid-template-columns:minmax(0,1fr) minmax(0,2fr) auto;align-items:end}
+.row .two{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
+.row .acts{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.row label{margin-top:4px}
+.chk{display:flex;align-items:center;gap:8px;font-family:var(--sans);font-size:.88rem;letter-spacing:0;color:var(--fg);margin:0}
+.chk input{width:auto}
+.add{margin-top:14px}
+.plist{display:grid;gap:8px;margin-top:12px}
+.pitem{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+.pitem b{font-weight:600}.pitem small{color:var(--mute);font-family:var(--mono)}
+.pitem .acts{display:flex;gap:8px}
+.pad-b{padding-bottom:80px}
+@media (max-width:640px){.row.facts-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id='login-view' class='login'>
+  <h1>站点后台</h1>
+  <p class='mute'>输入密码后可以修改网站内容。</p>
+  <label for='pw'>PASSWORD</label>
+  <input id='pw' type='password' autocomplete='current-password'>
+  <div style='margin-top:16px'><button id='login-btn' class='primary' type='button'>登录</button></div>
+  <div id='login-msg' class='msg' role='status'></div>
+</div>
+<div id='editor-view' hidden>
+  <div class='topbar'><div class='wrap'>
+    <strong>站点后台</strong>
+    <div class='acts'>
+      <a href='/' target='_blank' rel='noopener'>查看网站</a>
+      <button id='logout-btn' type='button'>退出</button>
+      <button id='save-btn' class='primary' type='button'>保存</button>
+    </div>
+  </div>
+  <div class='wrap'><div id='save-msg' class='msg' role='status'></div></div>
+</div>
+<div class='wrap pad-b'>
+  <fieldset><legend>PROFILE · 个人介绍</legend>
+    <label for='f-name'>NAME</label><input id='f-name'>
+    <label for='f-alias'>ALIAS</label><input id='f-alias'>
+    <label for='f-headline'>HEADLINE</label><input id='f-headline'>
+    <label for='f-intro'>INTRO</label><textarea id='f-intro'></textarea>
+    <label for='f-avatar'>AVATAR 头像（可上传，也可填图片链接，可留空）</label><input id='f-avatar'><div class='acts' style='justify-content:flex-start;margin-top:8px'><input type='file' id='av-file' accept='image/png,image/jpeg,image/gif,image/webp' style='width:auto'><button id='av-up' type='button'>上传头像并替换</button><span id='av-msg' class='msg' role='status'></span></div>
+  </fieldset>
+  <fieldset><legend>FACTS · 履历速览</legend>
+    <div id='facts-list'></div>
+    <button id='facts-add' class='add' type='button'>+ 添加一条</button>
+  </fieldset>
+  <fieldset><legend>OFFERS · 合作方式</legend>
+    <div id='offers-list'></div>
+    <button id='offers-add' class='add' type='button'>+ 添加一项</button>
+  </fieldset>
+  <fieldset><legend>PROJECTS · 做过的东西</legend>
+    <div id='projects-list'></div>
+    <button id='projects-add' class='add' type='button'>+ 添加项目</button>
+  </fieldset>
+  <fieldset><legend>COURSE · 课程</legend>
+    <label for='f-ctitle'>COURSE TITLE</label><input id='f-ctitle'>
+    <label for='f-cintro'>COURSE INTRO</label><textarea id='f-cintro'></textarea>
+    <div id='lessons-list'></div>
+    <button id='lessons-add' class='add' type='button'>+ 添加一讲</button>
+  </fieldset>
+  <fieldset><legend>WORK AREAS · 工作方向</legend>
+    <div id='areas-list'></div>
+    <button id='areas-add' class='add' type='button'>+ 添加方向</button>
+  </fieldset>
+  <fieldset><legend>POSTS · 文章管理（单独保存，不用顶部保存按钮）</legend>
+    <div id='posts-list'></div>
+    <div id='post-editor' class='row' hidden>
+      <div class='two'><div><label for='p-id'>ID（小写字母、数字、短横线，决定文章网址 /post/ID）</label><input id='p-id'></div><div><label for='p-date'>DATE</label><input id='p-date' placeholder='2026-11-20'></div></div>
+      <label for='p-title'>TITLE</label><input id='p-title'>
+      <label for='p-summary'>SUMMARY 简介（100 字左右）</label><textarea id='p-summary'></textarea>
+      <label for='p-body'>BODY 正文（空行分段；以 # 开头的行是小标题）</label><div class='acts' style='justify-content:flex-start'><input type='file' id='p-upload' accept='image/png,image/jpeg,image/gif,image/webp' style='width:auto'><button id='p-insert' type='button'>上传并插入图片</button><span id='up-msg' class='msg' role='status'></span></div><textarea id='p-body' style='min-height:320px'></textarea>
+      <label class='chk'><input type='checkbox' id='p-pub' checked> 发布（取消勾选就是草稿，前台看不到）</label>
+      <div class='acts'><span id='post-msg' class='msg' role='status'></span><span><button id='post-save' class='primary' type='button'>保存文章</button> <button id='post-cancel' type='button'>取消</button></span></div>
+    </div>
+    <button id='posts-add' class='add' type='button'>+ 新建文章</button>
+  </fieldset>
+  <fieldset><legend>LIFE · 生活</legend>
+    <div id='life-list'></div>
+    <button id='life-add' class='add' type='button'>+ 添加一项</button>
+  </fieldset>
+  <fieldset><legend>SOCIALS · 社交平台</legend>
+    <div id='socials-list'></div>
+    <button id='socials-add' class='add' type='button'>+ 添加平台</button>
+  </fieldset>
+  <fieldset><legend>CONTACT · 联系方式</legend>
+    <label for='f-email'>EMAIL</label><input id='f-email'>
+    <label for='f-wechat'>WECHAT</label><input id='f-wechat'>
+    <label for='f-github'>GITHUB（每行一个链接）</label><textarea id='f-github'></textarea>
+    <label for='f-note'>NOTE</label><textarea id='f-note'></textarea>
+  </fieldset>
+</div>
+</div>
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var token='',data=null;
+  function api(method,url,body){
+    var h={'Content-Type':'application/json'};
+    if(token)h['X-Token']=token;
+    return fetch(url,{method:method,headers:h,body:body?JSON.stringify(body):undefined,cache:'no-store'}).then(function(r){
+      return r.json().catch(function(){return {}}).then(function(j){
+        if(!r.ok){var e=new Error(j.error||('请求失败 '+r.status));e.status=r.status;throw e}
+        return j;
+      });
+    });
+  }
+  function say(id,text,cls){var el=$(id);el.textContent=text;el.className='msg '+(cls||'')}
+  function showEditor(){
+    $('login-view').hidden=true;$('editor-view').hidden=false;
+    api('GET','/api/site').then(function(d){data=d;fillForm(d);}).catch(function(e){say('save-msg',e.message,'err')});
+  }
+  function login(){
+    say('login-msg','登录中…');
+    api('POST','/api/login',{password:$('pw').value}).then(function(j){
+      token=j.token;try{sessionStorage.setItem('admin-token',token)}catch(e){}
+      $('pw').value='';say('login-msg','');showEditor();
+    }).catch(function(e){say('login-msg',e.message,'err')});
+  }
+  $('login-btn').addEventListener('click',login);
+  $('pw').addEventListener('keydown',function(e){if(e.key==='Enter')login()});
+  try{var t=sessionStorage.getItem('admin-token');if(t){token=t;showEditor()}}catch(e){}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function factRow(f){f=f||{};return '<div class="row facts-row"><div><label>KEY</label><input data-f="k" value="'+esc(f.k)+'"></div><div><label>VALUE</label><input data-f="v" value="'+esc(f.v)+'"></div><button type="button" class="danger" data-del>删除</button></div>'}
+  function offerRow(o){o=o||{};return '<div class="row"><label>TITLE</label><input data-f="title" value="'+esc(o.title)+'"><label>DESC</label><textarea data-f="desc">'+esc(o.desc)+'</textarea><label>PRICE（可留空，如 ¥299 起）</label><input data-f="price" value="'+esc(o.price)+'"><div class="acts"><span></span><button type="button" class="danger" data-del>删除</button></div></div>'}
+  function projRow(p){p=p||{};return '<div class="row"><div class="two"><div><label>NAME</label><input data-f="name" value="'+esc(p.name)+'"></div><div><label>GROUP</label><input data-f="group" value="'+esc(p.group)+'"></div></div><label>URL</label><input data-f="url" value="'+esc(p.url)+'"><label>DESC</label><textarea data-f="desc">'+esc(p.desc)+'</textarea><label>TAGS（逗号分隔）</label><input data-f="tags" value="'+esc((p.tags||[]).join(', '))+'"><div class="acts"><label class="chk"><input type="checkbox" data-f="featured"'+(p.featured?' checked':'')+'> 主力项目</label><button type="button" class="danger" data-del>删除</button></div></div>'}
+  function lessonRow(l){l=l||{};return '<div class="row"><div class="two"><div><label>NO</label><input data-f="no" value="'+esc(l.no)+'"></div><div><label>TITLE</label><input data-f="title" value="'+esc(l.title)+'"></div></div><label>POINTS（每行一条）</label><textarea data-f="points">'+esc((l.points||[]).join('\n'))+'</textarea><div class="acts"><span></span><button type="button" class="danger" data-del>删除</button></div></div>'}
+  function itemsToText(list){return (list||[]).map(function(i){return [i.status||'做过',i.name||'',i.url||'',i.desc||''].join(' | ')}).join('\n')}
+  function textToItems(t){return String(t||'').split(/\n/).map(function(l){return l.trim()}).filter(Boolean).map(function(l){var p=l.split('|').map(function(x){return x.trim()});return {status:p[0]||'做过',name:p[1]||'',url:p[2]||'',desc:p.slice(3).join(' | '),tags:[]}}).filter(function(i){return i.name})}
+  function areaRow(a){a=a||{};return '<div class="row"><div class="two"><div><label>KEY</label><input data-f="key" value="'+esc(a.key)+'"></div><div><label>TITLE</label><input data-f="title" value="'+esc(a.title)+'"></div></div><label>DESC</label><textarea data-f="desc">'+esc(a.desc)+'</textarea><label>POINTS（每行一条）</label><textarea data-f="points">'+esc((a.points||[]).join('\n'))+'</textarea><label>ITEMS 项目（每行一个：状态 | 名称 | 链接 | 说明；状态写 在做 或 做过）</label><textarea data-f="items" style="min-height:130px">'+esc(itemsToText(a.items))+'</textarea><div class="acts"><span></span><button type="button" class="danger" data-del>删除</button></div></div>'}
+  function lifeRow(x){x=x||{};return '<div class="row"><label>TITLE</label><input data-f="title" value="'+esc(x.title)+'"><label>DESC</label><textarea data-f="desc">'+esc(x.desc)+'</textarea><div class="acts"><span></span><button type="button" class="danger" data-del>删除</button></div></div>'}
+  function socialRow(s){s=s||{};return '<div class="row"><div class="two"><div><label>NAME</label><input data-f="name" value="'+esc(s.name)+'"></div><div><label>HANDLE</label><input data-f="handle" value="'+esc(s.handle)+'"></div></div><label>URL（可留空）</label><input data-f="url" value="'+esc(s.url)+'"><div class="acts"><span></span><button type="button" class="danger" data-del>删除</button></div></div>'}
+  var editing=false;
+  function loadPosts(){
+    api('GET','/api/posts').then(function(list){
+      $('posts-list').className='plist';
+      $('posts-list').innerHTML=list.length?list.map(function(p){return '<div class="pitem"><div><b>'+esc(p.title)+'</b> <small>'+esc(p.date||'')+' · /post/'+esc(p.id)+(p.published?'':' · 草稿')+'</small></div><div class="acts"><button type="button" data-edit="'+esc(p.id)+'">编辑</button><button type="button" class="danger" data-delpost="'+esc(p.id)+'">删除</button></div></div>'}).join(''):'<p class="mute">还没有文章。点下面“新建文章”。</p>';
+    }).catch(function(e){say('save-msg',e.message,'err')});
+  }
+  function openEditor(p,isNew){
+    $('post-editor').hidden=false;editing=true;
+    $('p-id').value=p.id||'';$('p-id').readOnly=!isNew;$('p-date').value=p.date||new Date().toISOString().slice(0,10);
+    $('p-title').value=p.title||'';$('p-summary').value=p.summary||'';$('p-body').value=p.body||'';$('p-pub').checked=p.published!==false;
+    say('post-msg','');$('p-title').focus();
+  }
+  $('posts-add').addEventListener('click',function(){openEditor({},true)});
+  $('post-cancel').addEventListener('click',function(){$('post-editor').hidden=true;editing=false});
+  $('post-save').addEventListener('click',function(){
+    var id=$('p-id').value.trim();
+    if(!/^[a-z0-9][a-z0-9-]{0,63}$/.test(id)){say('post-msg','ID 只能用小写字母、数字和短横线','err');return}
+    say('post-msg','保存中…');
+    api('PUT','/api/posts/'+encodeURIComponent(id),{title:$('p-title').value,date:$('p-date').value,summary:$('p-summary').value,body:$('p-body').value,published:$('p-pub').checked}).then(function(){say('post-msg','已保存','ok');loadPosts()}).catch(function(e){say('post-msg',e.message,'err')});
+  });
+  document.addEventListener('click',function(e){
+    var ed=e.target.closest&&e.target.closest('[data-edit]');
+    if(ed){api('GET','/api/posts/'+encodeURIComponent(ed.getAttribute('data-edit'))).then(function(p){openEditor(p,false)}).catch(function(x){say('save-msg',x.message,'err')})}
+    var dl=e.target.closest&&e.target.closest('[data-delpost]');
+    if(dl){var id=dl.getAttribute('data-delpost');if(dl.getAttribute('data-sure')!=='1'){dl.setAttribute('data-sure','1');dl.textContent='再点一次确认删除';return}api('DELETE','/api/posts/'+encodeURIComponent(id)).then(loadPosts).catch(function(x){say('save-msg',x.message,'err')})}
+  });
+  function fileToB64(file){return new Promise(function(ok,no){var r=new FileReader();r.onload=function(){ok(String(r.result).split(',')[1])};r.onerror=function(){no(new Error('读取文件失败'))};r.readAsDataURL(file)})}
+  $('p-insert').addEventListener('click',function(){
+    var f=$('p-upload').files[0];
+    if(!f){say('up-msg','请先选择一张图片','err');return}
+    if(f.size>10*1024*1024){say('up-msg','图片不能超过 10MB','err');return}
+    say('up-msg','上传中…');
+    fileToB64(f).then(function(b){return api('POST','/api/upload',{name:f.name,data:b})}).then(function(j){
+      var ta=$('p-body'),pos=ta.selectionStart==null?ta.value.length:ta.selectionStart,tag='\n\n![]('+j.url+')\n\n';
+      ta.value=ta.value.slice(0,pos)+tag+ta.value.slice(pos);
+      $('p-upload').value='';say('up-msg','已插入，记得点“保存文章”','ok');
+    }).catch(function(e){say('up-msg',e.message,'err')});
+  });
+  $('av-up').addEventListener('click',function(){var f=$('av-file').files[0];if(!f){say('av-msg','请先选择一张图片','err');return}if(f.size>10*1024*1024){say('av-msg','图片不能超过 10MB','err');return}say('av-msg','上传中…');fileToB64(f).then(function(b){return api('POST','/api/upload',{name:f.name,data:b})}).then(function(j){$('f-avatar').value=j.url;$('av-file').value='';say('av-msg','已替换，请点顶部“保存”后生效','ok')}).catch(function(e){say('av-msg',e.message,'err')})});
+  function fillList(id,arr,fn){$(id).innerHTML=(arr||[]).map(fn).join('')}
+  function fillForm(d){
+    var p=d.profile||{},c=d.contact||{};
+    $('f-name').value=p.name||'';$('f-alias').value=p.alias||'';$('f-headline').value=p.headline||'';$('f-intro').value=p.intro||'';$('f-avatar').value=p.avatar||'';
+    fillList('facts-list',d.facts,factRow);fillList('offers-list',d.offers,offerRow);fillList('projects-list',d.projects,projRow);
+    var cs=d.courses||{};$('f-ctitle').value=cs.title||'';$('f-cintro').value=cs.intro||'';fillList('lessons-list',cs.lessons,lessonRow);
+    fillList('areas-list',d.workAreas,areaRow);loadPosts();fillList('life-list',d.life,lifeRow);fillList('socials-list',d.socials,socialRow);
+    $('f-email').value=c.email||'';$('f-wechat').value=c.wechat||'';$('f-github').value=(c.github||[]).join('\n');$('f-note').value=c.note||'';
+  }
+  function rows(id,keys){
+    return Array.prototype.map.call($(id).children,function(r){
+      var o={};
+      keys.forEach(function(k){var el=r.querySelector('[data-f="'+k+'"]');o[k]=el?(el.type==='checkbox'?el.checked:el.value.trim()):''});
+      return o;
+    });
+  }
+  function collect(){
+    var projects=rows('projects-list',['name','group','url','desc','tags','featured']).filter(function(p){return p.name}).map(function(p){
+      p.tags=String(p.tags).split(/[,，]/).map(function(t){return t.trim()}).filter(Boolean);return p;
+    });
+    return {
+      profile:{name:$('f-name').value.trim(),alias:$('f-alias').value.trim(),headline:$('f-headline').value.trim(),intro:$('f-intro').value.trim(),avatar:$('f-avatar').value.trim()},
+      facts:rows('facts-list',['k','v']).filter(function(f){return f.k||f.v}),
+      offers:rows('offers-list',['title','desc','price']).filter(function(o){return o.title}),
+      projects:projects,
+      workAreas:rows('areas-list',['key','title','desc','points','items']).filter(function(a){return a.title}).map(function(a){return {key:a.key,title:a.title,desc:a.desc,items:textToItems(a.items),points:String(a.points).split(/\n/).map(function(s){return s.trim()}).filter(Boolean)}}),
+      life:rows('life-list',['title','desc']).filter(function(x){return x.title}),
+      socials:rows('socials-list',['name','handle','url']).filter(function(x){return x.name}),
+      courses:{title:$('f-ctitle').value.trim(),intro:$('f-cintro').value.trim(),lessons:rows('lessons-list',['no','title','points']).filter(function(l){return l.title}).map(function(l){return {no:parseInt(l.no,10)||0,title:l.title,points:String(l.points).split(/\n/).map(function(s){return s.trim()}).filter(Boolean)}})},
+      contact:{email:$('f-email').value.trim(),wechat:$('f-wechat').value.trim(),github:$('f-github').value.split(/\n/).map(function(s){return s.trim()}).filter(Boolean),note:$('f-note').value.trim()}
+    };
+  }
+  function addTo(btn,list,fn){$(btn).addEventListener('click',function(){$(list).insertAdjacentHTML('beforeend',fn());var last=$(list).lastElementChild.querySelector('input,textarea');if(last)last.focus()})}
+  addTo('facts-add','facts-list',factRow);addTo('offers-add','offers-list',offerRow);addTo('projects-add','projects-list',projRow);addTo('lessons-add','lessons-list',lessonRow);
+  addTo('areas-add','areas-list',areaRow);addTo('life-add','life-list',lifeRow);addTo('socials-add','socials-list',socialRow);
+  document.addEventListener('click',function(e){
+    var b=e.target.closest&&e.target.closest('[data-del]');
+    if(b){var row=b.closest('.row');if(row)row.remove()}
+  });
+  $('save-btn').addEventListener('click',function(){
+    say('save-msg','保存中…');
+    var out=collect();
+    api('PUT','/api/site',out).then(function(){data=out;say('save-msg','已保存，前台刷新即可看到。','ok')}).catch(function(e){
+      if(e.status===401){try{sessionStorage.removeItem('admin-token')}catch(x){}token='';$('editor-view').hidden=true;$('login-view').hidden=false;say('login-msg','登录已过期，请重新登录','err')}
+      else say('save-msg',e.message,'err');
+    });
+  });
+  $('logout-btn').addEventListener('click',function(){
+    api('POST','/api/logout').catch(function(){}).then(function(){
+      try{sessionStorage.removeItem('admin-token')}catch(e){}
+      token='';$('editor-view').hidden=true;$('login-view').hidden=false;say('login-msg','已退出');
+    });
+  });
+})();
+</script>
+</body>
+</html>
