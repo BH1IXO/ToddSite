@@ -6,16 +6,6 @@
 
 介绍 → 做过的和正在做的（六个方向，项目挂在方向下）→ 课程 → 文章 → 生活 → 合作 → 跟我聊聊（AI 分身对话框）。
 
-## 本地运行
-
-```bash
-cd "/Volumes/Family/刘涛官网/v7"
-ADMIN_PASSWORD='你的强密码' DEEPSEEK_API_KEY='你的 DeepSeek key' npm start
-```
-
-- 前台 http://localhost:3000 ，后台 http://localhost:3000/admin
-- 不设 `DEEPSEEK_API_KEY` 时，分身对话显示“暂未开放”，其他功能正常。
-
 ## 环境变量
 
 - `ADMIN_PASSWORD` 必填，后台密码。
