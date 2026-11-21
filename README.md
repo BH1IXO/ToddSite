@@ -1,4 +1,4 @@
-# 刘涛个人主页（v7）
+# Todd个人主页
 
 无依赖的 Node 站点（Node 18+）。站点内容在 `data/site.json`，文章在 `data/posts/*.json`，都通过 `/admin` 用密码在线修改。
 
