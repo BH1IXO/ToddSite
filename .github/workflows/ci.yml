@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Syntax check
+        run: node --check server.js
+      - name: Validate content JSON
+        run: |
+          node -e "const fs=require('fs');const s=JSON.parse(fs.readFileSync('data/site.json','utf8'));if(!s.profile||!s.profile.headline||!Array.isArray(s.projects))throw new Error('site.json invalid');for(const f of fs.readdirSync('data/posts')){if(f.endsWith('.json'))JSON.parse(fs.readFileSync('data/posts/'+f,'utf8'))}console.log('content ok')"
+      - name: Start server and smoke test
+        run: |
+          ADMIN_PASSWORD=ci-smoke PORT=3999 node server.js &
+          sleep 2
+          curl -fsS http://localhost:3999/ -o /dev/null
+          curl -fsS http://localhost:3999/admin -o /dev/null
+          curl -fsS http://localhost:3999/api/posts -o /dev/null
+          curl -fsS http://localhost:3999/api/site | grep -q '"headline"'
