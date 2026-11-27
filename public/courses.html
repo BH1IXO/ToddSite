@@ -29,6 +29,15 @@ h1{font-size:clamp(2.2rem,5vw,3.2rem);letter-spacing:-.04em;margin:10px 0 0;font
 .card li{padding-left:12px;position:relative}
 .card li::before{content:'·';position:absolute;left:0}
 @media (max-width:900px){.grid3{grid-template-columns:1fr}}
+/* 多课程分组：每门课一个区块 */
+.group{margin-top:44px}
+.ghead{margin:0 0 22px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.gk{font-family:var(--mono);font-size:12.5px;letter-spacing:.14em;color:var(--accent);margin:0}
+.group h2{font-size:clamp(1.5rem,3.4vw,2rem);letter-spacing:-.03em;margin:6px 0 0;font-weight:600;line-height:1.35}
+.gsub{color:var(--mute);margin:6px 0 0;font-size:1rem}
+.gaud{color:var(--mute);margin:2px 0 0;font-size:14.5px}
+.badge{display:inline-block;vertical-align:middle;font-family:var(--mono);font-size:12px;letter-spacing:.08em;font-weight:400;border:1px solid var(--line);border-radius:999px;padding:0 10px;color:var(--mute);line-height:1.9;white-space:nowrap}
+.empty{margin:0;border:1px dashed var(--line);border-radius:4px;background:var(--soft);padding:28px 20px;color:var(--mute);font-size:15px}
 /* 防溢出兜底 */
 html,body{max-width:100%;overflow-x:hidden}
 @supports (overflow:clip){html,body{overflow-x:clip}}
@@ -48,6 +57,12 @@ main{padding-top:28px;padding-bottom:56px}
 h1{font-size:clamp(1.8rem,8vw,2.2rem);line-height:1.3}
 .lead{margin:10px 0 20px;font-size:15px}
 .grid3{gap:14px}
+.group{margin-top:32px}
+.ghead{margin-bottom:16px;padding-bottom:12px}
+.group h2{font-size:1.4rem}
+.gsub{font-size:15px}
+.gaud{font-size:14px}
+.empty{padding:20px 16px;font-size:14.5px}
 .idx{padding:14px 16px 0}
 .card h3{padding:0 16px;font-size:18px}
 .card ul{padding:0 16px 16px;font-size:14.5px}
@@ -63,7 +78,7 @@ h1{font-size:clamp(1.8rem,8vw,2.2rem);line-height:1.3}
 <p class='kicker'>Course</p>
 <h1 id='ttl'>课程</h1>
 <p class='lead' id='intro'></p>
-<div class='grid3' id='list'></div>
+<div id='groups'></div>
 </main>
 </div>
 <script>
@@ -71,12 +86,17 @@ h1{font-size:clamp(1.8rem,8vw,2.2rem);line-height:1.3}
   function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
   function pad2(n){n=parseInt(n,10)||0;return (n<10?'0':'')+n}
   fetch('/api/site',{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){
-    var c=d.courses||{},ls=c.lessons||[];
-    document.getElementById('ttl').textContent=c.title||'课程';
-    document.getElementById('intro').textContent=c.intro||'';
-    document.getElementById('list').innerHTML=ls.map(function(l){
-      var pts=(l.points||[]).slice(0,4).map(function(x){return '<li>'+esc(x)+'</li>'}).join('');
-      return '<div class="card"><span class="idx">LESSON '+pad2(l.no)+'</span><h3>'+esc(l.title)+'</h3><ul>'+pts+'</ul></div>';
+    var c=d.courses||{},gs=Array.isArray(c.groups)?c.groups:(c.lessons?[{id:'course',title:c.title,subtitle:c.intro,status:'open',lessons:c.lessons}]:[]);
+    var nOpen=gs.filter(function(g){return g.status!=='wip'}).length;
+    document.getElementById('intro').textContent=gs.length?('共 '+gs.length+' 门课程，'+nOpen+' 门已开课'+(gs.length>nOpen?'，'+(gs.length-nOpen)+' 门筹备中':'')+'。'):'课程内容整理中。';
+    document.getElementById('groups').innerHTML=gs.map(function(g,gi){
+      var wip=g.status==='wip',ls=g.lessons||[];
+      var cards=ls.map(function(l){
+        var pts=(l.points||[]).slice(0,4).map(function(x){return '<li>'+esc(x)+'</li>'}).join('');
+        return '<div class="card"><span class="idx">LESSON '+pad2(l.no)+'</span><h3>'+esc(l.title)+'</h3><ul>'+pts+'</ul></div>';
+      }).join('');
+      var body=ls.length?'<div class="grid3">'+cards+'</div>':'<p class="empty">'+(wip?'课程内容筹备中，开课后会第一时间更新在这里。':'讲次整理中。')+'</p>';
+      return '<section class="group'+(wip?' wip':'')+'" id="c-'+String(g.id||gi).replace(/[^a-z0-9-]/gi,'')+'"><header class="ghead"><p class="gk">COURSE '+pad2(gi+1)+'</p><h2>'+esc(g.title)+(wip?' <span class="badge">筹备中</span>':'')+'</h2>'+(g.subtitle?'<p class="gsub">'+esc(g.subtitle)+'</p>':'')+(g.audience?'<p class="gaud">适合：'+esc(g.audience)+'</p>':'')+'</header>'+body+'</section>';
     }).join('');
   }).catch(function(){document.getElementById('intro').textContent='加载失败，请刷新重试。'});
 })();

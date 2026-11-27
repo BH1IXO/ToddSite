@@ -47,6 +47,15 @@ legend{font-family:var(--mono);font-size:.78rem;letter-spacing:.1em;color:var(--
 .pitem b{font-weight:600}.pitem small{color:var(--mute);font-family:var(--mono)}
 .pitem .acts{display:flex;gap:8px}
 .pad-b{padding-bottom:80px}
+.gbox{border:1px solid var(--line);border-radius:8px;background:var(--bg);margin-top:12px}
+.gbox>summary{cursor:pointer;padding:12px 14px;list-style:none;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;min-width:0}
+.gbox>summary::-webkit-details-marker{display:none}
+.gbox>summary::before{content:'▸';color:var(--accent)}
+.gbox[open]>summary::before{content:'▾'}
+.gbox>summary b{min-width:0;overflow-wrap:anywhere}
+.gbox>summary small{color:var(--mute);font-family:var(--mono)}
+.gbody{padding:0 14px 14px;border-top:1px solid var(--line)}
+.gbody .glessons .row{background:var(--card)}
 @media (max-width:640px){.row.facts-row{grid-template-columns:1fr}}
 /* 防溢出兜底 */
 html,body{max-width:100%;overflow-x:hidden}
@@ -112,11 +121,9 @@ select{min-height:44px}
     <div id='projects-list'></div>
     <button id='projects-add' class='add' type='button'>+ 添加项目</button>
   </fieldset>
-  <fieldset><legend>COURSE · 课程</legend>
-    <label for='f-ctitle'>COURSE TITLE</label><input id='f-ctitle'>
-    <label for='f-cintro'>COURSE INTRO</label><textarea id='f-cintro'></textarea>
-    <div id='lessons-list'></div>
-    <button id='lessons-add' class='add' type='button'>+ 添加一讲</button>
+  <fieldset><legend>COURSES · 课程（多门课）</legend>
+    <div id='groups-list'></div>
+    <button id='groups-add' class='add' type='button'>+ 添加一门课</button>
   </fieldset>
   <fieldset><legend>WORK AREAS · 工作方向</legend>
     <div id='areas-list'></div>
@@ -185,9 +192,10 @@ select{min-height:44px}
   function offerRow(o){o=o||{};return '<div class="row"><label>TITLE</label><input data-f="title" value="'+esc(o.title)+'"><label>DESC</label><textarea data-f="desc">'+esc(o.desc)+'</textarea><label>PRICE（可留空，如 ¥299 起）</label><input data-f="price" value="'+esc(o.price)+'"><div class="acts"><span></span><button type="button" class="danger" data-del>删除</button></div></div>'}
   function projRow(p){p=p||{};return '<div class="row"><div class="two"><div><label>NAME</label><input data-f="name" value="'+esc(p.name)+'"></div><div><label>GROUP</label><input data-f="group" value="'+esc(p.group)+'"></div></div><label>URL</label><input data-f="url" value="'+esc(p.url)+'"><label>DESC</label><textarea data-f="desc">'+esc(p.desc)+'</textarea><label>TAGS（逗号分隔）</label><input data-f="tags" value="'+esc((p.tags||[]).join(', '))+'"><div class="acts"><label class="chk"><input type="checkbox" data-f="featured"'+(p.featured?' checked':'')+'> 主力项目</label><button type="button" class="danger" data-del>删除</button></div></div>'}
   function lessonRow(l){l=l||{};return '<div class="row"><div class="two"><div><label>NO</label><input data-f="no" value="'+esc(l.no)+'"></div><div><label>TITLE</label><input data-f="title" value="'+esc(l.title)+'"></div></div><label>POINTS（每行一条）</label><textarea data-f="points">'+esc((l.points||[]).join('\n'))+'</textarea><div class="acts"><span></span><button type="button" class="danger" data-del>删除</button></div></div>'}
-  function itemsToText(list){return (list||[]).map(function(i){return [i.status||'做过',i.name||'',i.url||'',i.desc||''].join(' | ')}).join('\n')}
-  function textToItems(t){return String(t||'').split(/\n/).map(function(l){return l.trim()}).filter(Boolean).map(function(l){var p=l.split('|').map(function(x){return x.trim()});return {status:p[0]||'做过',name:p[1]||'',url:p[2]||'',desc:p.slice(3).join(' | '),tags:[]}}).filter(function(i){return i.name})}
-  function areaRow(a){a=a||{};return '<div class="row"><div class="two"><div><label>KEY</label><input data-f="key" value="'+esc(a.key)+'"></div><div><label>TITLE</label><input data-f="title" value="'+esc(a.title)+'"></div></div><label>DESC</label><textarea data-f="desc">'+esc(a.desc)+'</textarea><label>POINTS（每行一条）</label><textarea data-f="points">'+esc((a.points||[]).join('\n'))+'</textarea><label>ITEMS 项目（每行一个：状态 | 名称 | 链接 | 说明；状态写 在做 或 做过）</label><textarea data-f="items" style="min-height:130px">'+esc(itemsToText(a.items))+'</textarea><div class="acts"><span></span><button type="button" class="danger" data-del>删除</button></div></div>'}
+  function groupRow(g){g=g||{};var ls=g.lessons||[];return '<details class="gbox"><summary><b>'+esc(g.title||'新课程')+'</b><small>'+esc(g.id||'')+' · '+(g.status==='wip'?'筹备中':'已开课')+' · '+ls.length+' 讲</small></summary><div class="gbody"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px"><div><label>ID（小写字母、数字、短横线）</label><input data-g="id" value="'+esc(g.id)+'"></div><div><label>STATUS 状态</label><select data-g="status"><option value="open"'+(g.status==='wip'?'':' selected')+'>已开课（open）</option><option value="wip"'+(g.status==='wip'?' selected':'')+'>筹备中（wip）</option></select></div></div><label>TITLE</label><input data-g="title" value="'+esc(g.title)+'"><label>SUBTITLE 副标题</label><input data-g="subtitle" value="'+esc(g.subtitle)+'"><label>AUDIENCE 适合人群</label><input data-g="audience" value="'+esc(g.audience)+'"><label>LESSONS 讲次</label><div class="glessons">'+ls.map(function(l){return lessonRow(l)}).join('')+'</div><div class="acts" style="margin-top:12px"><button type="button" data-addlesson>+ 添加一讲</button><button type="button" class="danger" data-delgroup>删除这门课</button></div></div></details>'}
+  function itemsToText(list){return (list||[]).map(function(i){return [i.status||'做过',i.name||'',i.url||'',i.desc||'',(i.tags||[]).join(',')].join(' | ')}).join('\n')}
+  function textToItems(t){return String(t||'').split(/\n/).map(function(l){return l.trim()}).filter(Boolean).map(function(l){var p=l.split('|').map(function(x){return x.trim()});var tg=p.slice(4).join('|').split(/[,，]/).map(function(x){return x.trim()}).filter(Boolean);return {status:p[0]||'做过',name:p[1]||'',url:p[2]||'',desc:p[3]||'',tags:tg}}).filter(function(i){return i.name})}
+  function areaRow(a){a=a||{};return '<div class="row"><div class="two"><div><label>KEY</label><input data-f="key" value="'+esc(a.key)+'"></div><div><label>TITLE</label><input data-f="title" value="'+esc(a.title)+'"></div></div><label>DESC</label><textarea data-f="desc">'+esc(a.desc)+'</textarea><label>POINTS（每行一条）</label><textarea data-f="points">'+esc((a.points||[]).join('\n'))+'</textarea><label>ITEMS 项目（每行一个：状态 | 名称 | 链接 | 说明 | 标签；状态写 在做 或 做过，标签用逗号分隔，可留空）</label><textarea data-f="items" style="min-height:130px">'+esc(itemsToText(a.items))+'</textarea><div class="acts"><span></span><button type="button" class="danger" data-del>删除</button></div></div>'}
   function lifeRow(x){x=x||{};return '<div class="row"><label>TITLE</label><input data-f="title" value="'+esc(x.title)+'"><label>DESC</label><textarea data-f="desc">'+esc(x.desc)+'</textarea><div class="acts"><span></span><button type="button" class="danger" data-del>删除</button></div></div>'}
   function socialRow(s){s=s||{};return '<div class="row"><div class="two"><div><label>NAME</label><input data-f="name" value="'+esc(s.name)+'"></div><div><label>HANDLE</label><input data-f="handle" value="'+esc(s.handle)+'"></div></div><label>URL（可留空）</label><input data-f="url" value="'+esc(s.url)+'"><div class="acts"><span></span><button type="button" class="danger" data-del>删除</button></div></div>'}
   var editing=false,TAGN={original:'原创',paper:'论文',news:'资讯'};
@@ -235,7 +243,7 @@ select{min-height:44px}
     var p=d.profile||{},c=d.contact||{};
     $('f-name').value=p.name||'';$('f-alias').value=p.alias||'';$('f-headline').value=p.headline||'';$('f-intro').value=p.intro||'';$('f-avatar').value=p.avatar||'';
     fillList('facts-list',d.facts,factRow);fillList('offers-list',d.offers,offerRow);fillList('projects-list',d.projects,projRow);
-    var cs=d.courses||{};$('f-ctitle').value=cs.title||'';$('f-cintro').value=cs.intro||'';fillList('lessons-list',cs.lessons,lessonRow);
+    var cs=d.courses||{},gs=Array.isArray(cs.groups)?cs.groups:(cs.lessons?[{id:'vibe-coding',title:cs.title,subtitle:cs.intro,status:'open',lessons:cs.lessons}]:[]);fillList('groups-list',gs,groupRow);
     fillList('areas-list',d.workAreas,areaRow);loadPosts();fillList('life-list',d.life,lifeRow);fillList('socials-list',d.socials,socialRow);
     $('f-email').value=c.email||'';$('f-wechat').value=c.wechat||'';$('f-github').value=(c.github||[]).join('\n');$('f-note').value=c.note||'';
   }
@@ -258,20 +266,48 @@ select{min-height:44px}
       workAreas:rows('areas-list',['key','title','desc','points','items']).filter(function(a){return a.title}).map(function(a){return {key:a.key,title:a.title,desc:a.desc,items:textToItems(a.items),points:String(a.points).split(/\n/).map(function(s){return s.trim()}).filter(Boolean)}}),
       life:rows('life-list',['title','desc']).filter(function(x){return x.title}),
       socials:rows('socials-list',['name','handle','url']).filter(function(x){return x.name}),
-      courses:{title:$('f-ctitle').value.trim(),intro:$('f-cintro').value.trim(),lessons:rows('lessons-list',['no','title','points']).filter(function(l){return l.title}).map(function(l){return {no:parseInt(l.no,10)||0,title:l.title,points:String(l.points).split(/\n/).map(function(s){return s.trim()}).filter(Boolean)}})},
+      courses:{groups:Array.prototype.map.call($('groups-list').children,function(box){
+        function gv(k){var el=box.querySelector('[data-g="'+k+'"]');return el?el.value.trim():''}
+        var lessons=Array.prototype.map.call(box.querySelectorAll('.glessons > .row'),function(r){
+          function lv(k){var el=r.querySelector('[data-f="'+k+'"]');return el?el.value.trim():''}
+          return {no:parseInt(lv('no'),10)||0,title:lv('title'),points:lv('points').split(/\n/).map(function(s){return s.trim()}).filter(Boolean)};
+        }).filter(function(l){return l.title});
+        return {id:gv('id'),title:gv('title'),subtitle:gv('subtitle'),audience:gv('audience'),status:gv('status')==='wip'?'wip':'open',lessons:lessons};
+      }).filter(function(g){return g.title}).map(function(g,i){if(!g.id)g.id='course-'+(i+1);return g})},
       contact:{email:$('f-email').value.trim(),wechat:$('f-wechat').value.trim(),github:$('f-github').value.split(/\n/).map(function(s){return s.trim()}).filter(Boolean),note:$('f-note').value.trim()}
     };
   }
   function addTo(btn,list,fn){$(btn).addEventListener('click',function(){$(list).insertAdjacentHTML('beforeend',fn());var last=$(list).lastElementChild.querySelector('input,textarea');if(last)last.focus()})}
-  addTo('facts-add','facts-list',factRow);addTo('offers-add','offers-list',offerRow);addTo('projects-add','projects-list',projRow);addTo('lessons-add','lessons-list',lessonRow);
+  addTo('facts-add','facts-list',factRow);addTo('offers-add','offers-list',offerRow);addTo('projects-add','projects-list',projRow);$('groups-add').addEventListener('click',function(){var l=$('groups-list');l.insertAdjacentHTML('beforeend',groupRow({status:'wip',lessons:[]}));var g=l.lastElementChild;g.open=true;var i=g.querySelector('input');if(i)i.focus()});
+  document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('[data-addlesson]');if(a){var ls=a.closest('.gbox').querySelector('.glessons');ls.insertAdjacentHTML('beforeend',lessonRow({no:ls.children.length+1}));var f=ls.lastElementChild.querySelector('input[data-f=title]');if(f)f.focus()}var dg=e.target.closest&&e.target.closest('[data-delgroup]');if(dg){if(dg.getAttribute('data-sure')!=='1'){dg.setAttribute('data-sure','1');dg.textContent='再点一次确认删除';return}dg.closest('.gbox').remove()}});
   addTo('areas-add','areas-list',areaRow);addTo('life-add','life-list',lifeRow);addTo('socials-add','socials-list',socialRow);
   document.addEventListener('click',function(e){
     var b=e.target.closest&&e.target.closest('[data-del]');
     if(b){var row=b.closest('.row');if(row)row.remove()}
   });
+  // 保存时以服务器上的原数据为底：表单里没有的字段（kind、articles、项目 tags 等）原样保留，不再被重建对象抹掉
+  function mergeSaved(old,cur){
+    old=old||{};
+    function find(list,fn){for(var i=0;i<(list||[]).length;i++)if(fn(list[i]))return list[i];return null}
+    var out=Object.assign({},old,cur);
+    out.workAreas=(cur.workAreas||[]).map(function(a){
+      var oa=find(old.workAreas,function(x){return (a.key&&x.key===a.key)||x.title===a.title})||{};
+      var items=(a.items||[]).map(function(it){
+        var oi=find(oa.items,function(x){return x.name===it.name||(it.url&&x.url===it.url)})||{};
+        return Object.assign({},oi,it,{tags:Array.isArray(oi.tags)?oi.tags:[]});
+      });
+      return Object.assign({},oa,a,{items:items});
+    });
+    out.projects=(cur.projects||[]).map(function(p){
+      var op=find(old.projects,function(x){return x.name===p.name})||{};
+      return Object.assign({},op,p);
+    });
+    return out;
+  }
   $('save-btn').addEventListener('click',function(){
     say('save-msg','保存中…');
-    var out=collect();
+    if(!data){say('save-msg','数据还没加载完，请稍后再保存','err');return}
+    var out=mergeSaved(data,collect());
     api('PUT','/api/site',out).then(function(){data=out;say('save-msg','已保存，前台刷新即可看到。','ok')}).catch(function(e){
       if(e.status===401){try{sessionStorage.removeItem('admin-token')}catch(x){}token='';$('editor-view').hidden=true;$('login-view').hidden=false;say('login-msg','登录已过期，请重新登录','err')}
       else say('save-msg',e.message,'err');

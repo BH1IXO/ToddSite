@@ -60,7 +60,8 @@ function persona() {
   let d = {}; try { d = JSON.parse(fs.readFileSync(DATA, 'utf-8')); } catch (e) {}
   const p = d.profile || {};
   const areas = (d.workAreas || []).map(a => '- ' + a.title + '：' + a.desc + ((a.items || []).length ? '（项目：' + a.items.map(i => i.name + ' ' + (i.desc || '')).join('；') + '）' : '')).join('\n');
-  const course = d.courses ? d.courses.title + '：' + (d.courses.lessons || []).map(l => '第' + l.no + '讲 ' + l.title).join('；') : '';
+  const cg = d.courses ? (Array.isArray(d.courses.groups) ? d.courses.groups : [d.courses]) : []; // 兼容旧的单课程结构
+  const course = cg.length ? '\n' + cg.map(g => '- ' + g.title + (g.status === 'wip' ? '（筹备中，还没开课）' : '') + ((g.lessons || []).length ? '：' + g.lessons.map(l => '第' + l.no + '讲 ' + l.title).join('；') : '')).join('\n') : '';
   const offers = (d.offers || []).map(o => '- ' + o.title + '：' + o.desc + (o.price ? '（' + o.price + '）' : '')).join('\n');
   let posts = '';
   try {
@@ -76,6 +77,30 @@ function persona() {
     (course ? '【课程】' + course + '\n' : '') +
     (offers ? '【合作方式】\n' + offers + '\n' : '') +
     (posts ? '【文章】\n' + posts + '\n' : '');
+}
+
+// 以磁盘上的旧数据为底合并请求体：请求里没有的字段原样保留，有的以请求为准；workAreas / items / projects 的增删以请求为准
+function mergeSite(old, cur) {
+  old = old && typeof old === 'object' ? old : {};
+  const obj = x => (x && typeof x === 'object' ? x : {});
+  const find = (list, fn) => (Array.isArray(list) ? list : []).find(x => x && fn(x)) || null;
+  const out = Object.assign({}, old, cur);
+  if (Array.isArray(cur.workAreas)) out.workAreas = cur.workAreas.map(a0 => {
+    const a = obj(a0), oa = find(old.workAreas, x => (a.key && x.key === a.key) || (a.title && x.title === a.title)) || {};
+    const r = Object.assign({}, oa, a);
+    if (Array.isArray(a.items)) r.items = a.items.map(i0 => {
+      const it = obj(i0), oi = find(oa.items, x => (it.name && x.name === it.name) || (it.url && x.url === it.url)) || {};
+      const m = Object.assign({}, oi, it);
+      m.tags = Array.isArray(it.tags) ? it.tags : (Array.isArray(oi.tags) ? oi.tags : []);
+      return m;
+    });
+    return r;
+  });
+  if (Array.isArray(cur.projects)) out.projects = cur.projects.map(p0 => {
+    const p = obj(p0), op = find(old.projects, x => p.name && x.name === p.name) || {};
+    return Object.assign({}, op, p);
+  });
+  return out;
 }
 
 async function api(req, res, url) {
@@ -162,7 +187,9 @@ async function api(req, res, url) {
     fs.copyFileSync(DATA, path.join(ROOT, 'data', 'backup', 'site-' + Date.now() + '.json'));
     const old = fs.readdirSync(path.join(ROOT, 'data', 'backup')).sort().slice(0, -30);
     old.forEach(f => fs.unlinkSync(path.join(ROOT, 'data', 'backup', f)));
-    fs.writeFileSync(DATA + '.tmp', JSON.stringify(obj, null, 2));
+    let disk = {}; try { disk = JSON.parse(fs.readFileSync(DATA, 'utf-8')); } catch (e) {} // 磁盘旧数据作为底，缺失字段原样保留
+    const merged = mergeSite(disk, obj);
+    fs.writeFileSync(DATA + '.tmp', JSON.stringify(merged, null, 2));
     fs.renameSync(DATA + '.tmp', DATA);
     return send(res, 200, { ok: true });
   }
