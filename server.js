@@ -207,10 +207,13 @@ async function api(req, res, url) {
       const prev = (() => { try { return readPost(id); } catch (e) { return {}; } })(); // 原文件（不存在或损坏则为空），用于保留 tag/link/source/createdAt
       if (o.tag != null && !TAGS.includes(o.tag)) return send(res, 400, { error: '标签只能是 original、paper、news' }); // 传了非法值不静默降级
       const post = { id, title: String(o.title).trim(), date: String(o.date || '').trim(), tag: o.tag != null ? o.tag : tagOf(prev), summary: String(o.summary || '').trim(), body: String(o.body || '') }; // tag 缺失则沿用原文件，新建默认 original
-      if (prev.link) post.link = prev.link;
-      if (prev.source) post.source = prev.source;
+      const isNew = !fs.existsSync(file), str = v => (typeof v === 'string' ? v.trim() : ''), okTime = v => typeof v === 'string' && v && !isNaN(Date.parse(v)); // 非字符串的 link/source 当没传
+      const link = str(o.link) || str(prev.link), source = str(o.source) || str(prev.source); // 请求体优先，其次原文件
+      if (link) post.link = link;
+      if (source) post.source = source;
       post.published = o.published !== false;
-      if (prev.createdAt) post.createdAt = prev.createdAt;
+      const createdAt = prev.createdAt || (okTime(o.createdAt) ? o.createdAt : (isNew ? new Date().toISOString() : '')); // 已有文章保留原值不刷新；新建取请求体，没传则当前时间
+      if (createdAt) post.createdAt = createdAt;
       fs.writeFileSync(file + '.tmp', JSON.stringify(post, null, 2));
       fs.renameSync(file + '.tmp', file);
       return send(res, 200, { ok: true });
