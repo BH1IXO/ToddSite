@@ -203,8 +203,10 @@ async function api(req, res, url) {
     try {
       if (reply) MEM.appendTurn(USERS, uid, 'assistant', reply);
       MEM.trimLog(USERS, uid);
-      ud.lastSeen = new Date().toISOString();
-      MEM.saveProfile(USERS, uid, ud);
+      // 重新读档再存，避免覆盖上一轮异步提炼刚写入的 facts
+      const cur0 = MEM.loadProfile(USERS, uid);
+      cur0.visits = ud.visits; cur0.turns = ud.turns; cur0.lastSeen = new Date().toISOString();
+      MEM.saveProfile(USERS, uid, cur0);
     } catch (e) {}
     if (ud.turns % MEM.EXTRACT_EVERY === 0) {
       // 用最近 12 条流水做一次提炼，失败静默
