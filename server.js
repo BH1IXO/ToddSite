@@ -1,9 +1,12 @@
 const http = require('http'), fs = require('fs'), path = require('path'), crypto = require('crypto');
+const MEM = require('./lib/memory');
+const EXT = require('./lib/extract');
 const PORT = process.env.PORT || 3000;
 const PASS = process.env.ADMIN_PASSWORD;
 if (!PASS) { console.error('请先设置环境变量 ADMIN_PASSWORD'); process.exit(1); }
 const ROOT = __dirname, PUB = path.join(ROOT, 'public');
 const DATA = path.join(ROOT, 'data', 'site.json');
+const USERS = MEM.ensureDir(path.join(ROOT, 'data', 'users'));
 const sessions = new Map(), fails = new Map();
 const MIME = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp', '.ico': 'image/x-icon' };
 
@@ -56,7 +59,7 @@ function chatCount(ip) {
   h.push(now); chatHits.set(ip, h); siteDay.n++;
   if (chatHits.size > 5000) chatHits.clear();
 }
-function persona() {
+function persona(ud) {
   let d = {}; try { d = JSON.parse(fs.readFileSync(DATA, 'utf-8')); } catch (e) {}
   const p = d.profile || {};
   const areas = (d.workAreas || []).map(a => '- ' + a.title + '：' + a.desc + ((a.items || []).length ? '（项目：' + a.items.map(i => i.name + ' ' + (i.desc || '')).join('；') + '）' : '')).join('\n');
@@ -68,15 +71,30 @@ function persona() {
     const dir = path.join(ROOT, 'data', 'posts');
     posts = fs.readdirSync(dir).filter(f => f.endsWith('.json')).map(f => JSON.parse(fs.readFileSync(path.join(dir, f), 'utf-8'))).filter(x => x.published !== false).map(x => '- ' + x.title + '：' + (x.summary || '')).join('\n');
   } catch (e) {}
-  return '你是' + (p.name || '刘涛') + '（Todd）的网站分身，在他的个人主页上和访客聊天。用第一人称“我”，语气自然、简短、直接，每次回答尽量不超过 150 字。\n' +
-    '只依据下面的资料回答，资料里没有的事就说“这个我还没写在网站上，可以通过下面的联系方式直接问我本人”，不要编造经历、数据、客户或价格。\n' +
-    '不透露任何私人信息（住址、证件、银行卡、家人隐私等），不替本人做商务承诺或报价，有合作意向就引导对方留下联系方式。\n' +
-    '你是 AI 分身，访客问起时要如实说明。\n\n' +
-    '【简介】' + (p.headline || '') + ' ' + (p.intro || '') + '\n' +
+  // ---- 记忆层：把「关于对方」的东西拼进来，这是人味的来源 ----
+  const facts = ud ? MEM.factsBlock(ud) : '';
+  const gap = ud && ud.lastSeen ? MEM.gapText(ud.lastSeen) : '';
+  const visits = ud ? (ud.visits || 0) : 0;
+  const rel = [];
+  if (visits > 1) rel.push('你们聊过 ' + visits + ' 次' + (gap ? '，' + gap : '') + '。');
+  if (ud && ud.tone) rel.push('对方的说话风格：' + ud.tone);
+
+  return '你是刘涛（Todd）本人，在他的个人主页上直接跟访客说话。用第一人称"我"，你就是刘涛，不是客服、不是助手。\n' +
+    '说话像一个真实的、有点忙但愿意聊的人：短句子、说人话，不用"您好""很高兴为您服务"这类客套。\n' +
+    '每次回答控制在 120 字以内，除非对方明确要详细展开。\n\n' +
+    '【态度】\n' +
+    '- 有自己的判断，可以直接说"这个我不这么看""这事我踩过坑"，不要一味迎合。\n' +
+    '- 对方问的东西资料里没有，就直说"这个我还没写在网站上"，然后自然把话接下去，别生硬打发人走。\n' +
+    '- 对方说得含糊时追问一句，别猜。想知道对方具体在做什么，就问。\n' +
+    '- 不编造经历、数据、客户、价格。不透露私人信息（住址、证件、银行卡、家人）。不替自己做商务承诺或报价，有合作意向就引导对方留联系方式。\n' +
+    '- 对方问你是不是 AI，如实说这是你的数字分身。\n' +
+    (facts ? '\n【关于对方，你记得的】\n' + facts + '\n' : '') +
+    (rel.length ? '\n【你们的关系】\n' + rel.join('') + '别每次都重新自我介绍，就当熟人。\n' : '') +
+    '\n【我的简介】' + (p.headline || '') + ' ' + (p.intro || '') + '\n' +
     '【工作方向与项目】\n' + areas + '\n' +
     (course ? '【课程】' + course + '\n' : '') +
     (offers ? '【合作方式】\n' + offers + '\n' : '') +
-    (posts ? '【文章】\n' + posts + '\n' : '');
+    (posts ? '【我写过的文章】\n' + posts + '\n' : '');
 }
 
 // 以磁盘上的旧数据为底合并请求体：请求里没有的字段原样保留，有的以请求为准；workAreas / items / projects 的增删以请求为准
@@ -110,23 +128,59 @@ async function api(req, res, url) {
     if (tip) return send(res, 429, { error: tip });
     let body;
     try { body = JSON.parse(await readBody(req, 20000)); } catch (e) { return send(res, 400, { error: '请求格式不对' }); }
-    const hist = (Array.isArray(body.messages) ? body.messages : []).slice(-10)
-      .filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
-      .map(m => ({ role: m.role, content: m.content.slice(0, 600) }));
-    if (!hist.length || hist[hist.length - 1].role !== 'user') return send(res, 400, { error: '消息不能为空' });
+
+    // ---- 身份：优先用请求里带回来的 uid；没有就发一个新的（首次访问）----
+    let uid = null;
+    const claimed = String(body.uid || '');
+    if (MEM.uidOk(claimed)) {
+      const f = MEM.paths(USERS, claimed).profile;
+      if (fs.existsSync(f)) uid = claimed;
+    }
+    let issued = false;
+    if (!uid) { uid = MEM.newUid(); issued = true; }
+
+    // 对方这次发的话（前端只发当前这句；老客户端发 messages 也兼容）
+    let userText = '';
+    if (typeof body.message === 'string' && body.message.trim()) userText = body.message.trim();
+    else if (Array.isArray(body.messages)) {
+      const lastUser = body.messages.filter(m => m && m.role === 'user' && typeof m.content === 'string').pop();
+      if (lastUser) userText = lastUser.content.trim();
+    }
+    userText = userText.slice(0, 600);
+    if (!userText) return send(res, 400, { error: '消息不能为空' });
+
+    // ---- 记忆：读档、记到访、把这句话写进流水 ----
+    let ud = {};
+    try { ud = MEM.touch(USERS, uid); } catch (e) { ud = MEM.loadProfile(USERS, uid); }
+    const past = MEM.recentTurns(USERS, uid, MEM.CTX_TURNS);
+    try { MEM.appendTurn(USERS, uid, 'user', userText); } catch (e) {}
+    ud.turns = (ud.turns || 0) + 1;
+
+    // 上下文 = 历史 + 这一句（历史里已含更早的 user 消息，避免重复最后一句）
+    const hist = past.filter(m => m.content !== userText).slice(-MEM.CTX_TURNS);
+    const messages = [{ role: 'system', content: persona(ud) }]
+      .concat(hist.length ? hist : [{ role: 'user', content: '你好' }].slice(0, 0))
+      .concat([{ role: 'user', content: userText }]);
+
     let up;
     try {
       up = await fetch(DS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + DS_KEY },
-        body: JSON.stringify({ model: DS_MODEL, stream: true, max_tokens: 500, temperature: 0.6, messages: [{ role: 'system', content: persona() }].concat(hist) }),
+        body: JSON.stringify({ model: DS_MODEL, stream: true, max_tokens: 500, temperature: 0.75, messages }),
         signal: AbortSignal.timeout(60000)
       });
     } catch (e) { return send(res, 502, { error: '分身这会儿没响应，稍后再试。' }); }
     if (!up.ok || !up.body) return send(res, 502, { error: '分身这会儿没响应，稍后再试。' });
     chatCount(clientIp(req));
-    res.writeHead(200, { 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
-    const dec = new TextDecoder(); let buf = '';
+    // 首帧先把 uid 告诉前端，让它存下来（刷新后认得出同一个人）
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-store',
+      'X-Content-Type-Options': 'nosniff', 'X-UID': uid,
+      ...(issued ? { 'Set-Cookie': 'tid=' + uid + '; Path=/; Max-Age=31536000; SameSite=Lax' } : {}),
+    });
+    res.write('data: ' + JSON.stringify({ uid, ...(issued ? { first: true } : {}) }) + '\n\n');
+    const dec = new TextDecoder(); let buf = '', reply = '';
     try {
       for await (const chunk of up.body) {
         buf += dec.decode(chunk, { stream: true });
@@ -136,11 +190,64 @@ async function api(req, res, url) {
           if (!line.startsWith('data:')) continue;
           const data = line.slice(5).trim();
           if (data === '[DONE]') continue;
-          try { const t = JSON.parse(data).choices[0].delta.content; if (t) res.write('data: ' + JSON.stringify({ content: t }) + '\n\n'); } catch (e) {}
+          try {
+            const t = JSON.parse(data).choices[0].delta.content;
+            if (t) { reply += t; res.write('data: ' + JSON.stringify({ content: t }) + '\n\n'); }
+          } catch (e) {}
         }
       }
     } catch (e) {}
-    res.write('data: [DONE]\n\n'); return res.end();
+    res.write('data: [DONE]\n\n'); res.end();
+
+    // ---- 收尾：记回复、提炼事实（异步，不阻塞用户）----
+    try {
+      if (reply) MEM.appendTurn(USERS, uid, 'assistant', reply);
+      MEM.trimLog(USERS, uid);
+      ud.lastSeen = new Date().toISOString();
+      MEM.saveProfile(USERS, uid, ud);
+    } catch (e) {}
+    if (ud.turns % MEM.EXTRACT_EVERY === 0) {
+      // 用最近 12 条流水做一次提炼，失败静默
+      (async () => {
+        try {
+          const recent = MEM.recentTurns(USERS, uid, 12);
+          if (recent.length < 4) return;
+          const got = await EXT.extractFacts({ url: DS_URL, key: DS_KEY, model: DS_MODEL, turns: recent });
+          if (!got.length) return;
+          const cur = MEM.loadProfile(USERS, uid);
+          cur.facts = MEM.mergeFacts(cur.facts, got);
+          MEM.saveProfile(USERS, uid, cur);
+        } catch (e) {}
+      })();
+    }
+    return;
+  }
+  // 拉回这个人的对话历史（刷新页面后前端用它恢复）
+  if (url === '/api/chat/history' && req.method === 'GET') {
+    const q = new URL(req.url, 'http://x').searchParams;
+    const uid = String(q.get('uid') || '');
+    if (!MEM.uidOk(uid) || !fs.existsSync(MEM.paths(USERS, uid).profile)) {
+      return send(res, 200, { uid: '', messages: [], visits: 0 });
+    }
+    const n = Math.max(1, Math.min(40, parseInt(q.get('n'), 10) || 20));
+    const ud = MEM.loadProfile(USERS, uid);
+    const msgs = MEM.recentTurns(USERS, uid, n).map(m => ({ role: m.role, content: m.content }));
+    return send(res, 200, {
+      uid, messages: msgs, visits: ud.visits || 0,
+      lastSeen: ud.lastSeen || '', facts: (ud.facts || []).length,
+    });
+  }
+  // 忘掉我：清掉这个 uid 的全部记忆（给访客的退出权利，也方便自己测）
+  if (url === '/api/chat/reset' && req.method === 'POST') {
+    let o = {};
+    try { o = JSON.parse(await readBody(req, 2000)); } catch (e) {}
+    const uid = String(o.uid || '');
+    if (!MEM.uidOk(uid)) return send(res, 400, { error: 'uid 不对' });
+    for (const k of ['profile', 'log', 'meta']) {
+      const f = MEM.paths(USERS, uid)[k];
+      try { if (fs.existsSync(f)) fs.unlinkSync(f); } catch (e) {}
+    }
+    return send(res, 200, { ok: true }, 'application/json; charset=utf-8');
   }
   if (url === '/api/upload' && req.method === 'POST') {
     if (!authed(req)) return send(res, 401, { error: '未登录或登录已过期' });
