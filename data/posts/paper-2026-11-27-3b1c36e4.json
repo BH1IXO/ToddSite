@@ -1,0 +1,12 @@
+{
+  "id": "paper-2026-11-27-3b1c36e4",
+  "title": "Attack Policy Selection can Mislead Monitor Evaluators",
+  "date": "2026-11-27",
+  "tag": "paper",
+  "summary": "以已下线的生产级 OpenAI 监控器为案例，证明攻击策略的「生成方法 × 优化程度」会让同一监控器的实测漏检率横跨 0.5%→20.8%（同一 RL 方法内），以及 6.4%→23.0%（跨方法最优档）。",
+  "body": "今天推荐读的一篇论文是《Attack Policy Selection can Mislead Monitor Evaluators》（arXiv:2611.34934），作者：Charlie Griffin, Oliver Makins, Asa Cooper Stickland。它主要讲的是：以已下线的生产级 OpenAI 监控器为案例，证明攻击策略的「生成方法 × 优化程度」会让同一监控器的实测漏检率横跨 0.5%→20.8%（同一 RL 方法内）。\n\n## 为什么值得读\n\n它给的是评估方法论本身，不是某个结论。核心洞见是「代理 transcript 会引入监控器能看见、但部署中不存在的 artifact」，因此任何用代理攻击得出的安全结论，都需要额外论证这些代理为什么有信息量。做 agent 安全、做 red-team 自测的人必须读。\n\n## 核心贡献\n\n以已下线的生产级 OpenAI 监控器为案例，证明攻击策略的「生成方法 × 优化程度」会让同一监控器的实测漏检率横跨 0.5%→20.8%（同一 RL 方法内），以及 6.4%→23.0%（跨方法最优档）。所有攻击策略只在代理监控器上开发，结果迁移到留出的 GPT-5.4 target monitor 上验证。\n\n## 怎么用到我的工作里\n\n如果我在给自己的 AI 产品做安全或质量自测，可以先用这篇的思路检查一遍：现在用的攻击样本和评测方法够不够强，别测出来的只是测试者的水平。具体做法是把评测拆成「生成方式」和「优化程度」两个维度，各跑几档再看结果的波动；波动越大，之前的单点结论越不能直接当依据。\n\n原文链接：https://arxiv.org/abs/2611.34934",
+  "link": "https://arxiv.org/abs/2611.34934",
+  "source": "2026-11-27_08-06-51.md",
+  "published": true,
+  "createdAt": "2026-11-27T07:47:21.236Z"
+}

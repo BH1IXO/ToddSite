@@ -1,0 +1,12 @@
+{
+  "id": "news-2026-11-27-05c643f5",
+  "title": "Scott Aaronson：“我这辈子第一次感觉P≠NP不远了”",
+  "date": "2026-11-27",
+  "tag": "news",
+  "summary": "OpenAI/Anthropic一周内陆续用Lean证书证出VP≠VNP、矩阵乘法指数ω=9/4、FFT下界等一批“老问题”；Aaronson承认，自己此前对“ω=2”持怀疑态度，如今这一怀疑得到了印证。",
+  "body": "今天值得关注的一条资讯：Scott Aaronson：“我这辈子第一次感觉P≠NP不远了”。消息来自Shtetl-Optimized。先说结论：OpenAI/Anthropic一周内陆续用Lean证书证出VP≠VNP、矩阵乘法指数ω=9/4、FFT下界等一批“老问题”；Aaronson承认，自己此前对“ω=2”持怀疑态度。\n\n## 要点展开\n\nOpenAI/Anthropic一周内陆续用Lean证书证出VP≠VNP、矩阵乘法指数ω=9/4、FFT下界等一批“老问题”；Aaronson承认，自己此前对“ω=2”持怀疑态度，如今这一怀疑得到了印证。\n\n热度判断：当前热度高（HN 1980分，登顶；标题就是四个“holy shit”）；潜在热度中高（中文圈还没广传）；趋势：高点期，但正向中文互联网外溢。\n\n可以直接引用的数据和说法：\n\n· I now feel in my bones, for the first time ever, that a proof of P ≠ NP is not far.”（我这辈子第一次从骨子里感觉到：P≠NP的证明已经不远了。）\n\n· 他原话：这些公司现在连新闻稿都懒得发了，直接往GitHub传论文。\n\n· （谨慎处理）“他说自己‘几乎肯定’AI实验室手里有一些密码学上的重磅发现——但他明确说：我没有细节，不想传播未验证的谣言。”⚠️ 口播务必带上这句免责说明，别把八卦当结论。\n\n## 为什么这条适合口播\n\n它正处在升温阶段，现在发出来有赶早的优势。素材里已经带了可直接引用的数据和说法，口播时不用再花时间找素材。\n\n原文链接：https://scottaaronson.blog/?p=10379",
+  "link": "https://scottaaronson.blog/?p=10379",
+  "source": "2026-11-27_09-06-50.md",
+  "published": true,
+  "createdAt": "2026-11-27T07:47:21.358Z"
+}

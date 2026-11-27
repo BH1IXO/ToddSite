@@ -169,12 +169,23 @@ async function api(req, res, url) {
   const POSTS = path.join(ROOT, 'data', 'posts');
   const idOk = id => /^[a-z0-9][a-z0-9-]{0,63}$/.test(id || '');
   const readPost = id => JSON.parse(fs.readFileSync(path.join(POSTS, id + '.json'), 'utf-8'));
-  if (url === '/api/posts' && req.method === 'GET') {
+  const TAGS = ['original', 'paper', 'news'], tagOf = p => TAGS.includes(p.tag) ? p.tag : 'original'; // 缺省或未知标签一律视为原创
+  const listPosts = () => { // 读取全部文章（含草稿），列表和标签计数共用
     fs.mkdirSync(POSTS, { recursive: true });
-    const list = fs.readdirSync(POSTS).filter(f => f.endsWith('.json')).map(f => {
-      try { const p = readPost(f.slice(0, -5)); return { id: p.id, title: p.title, date: p.date, summary: p.summary, published: p.published !== false }; } catch (e) { return null; }
-    }).filter(Boolean).filter(p => p.published || authed(req)).sort((a, b) => String(b.date).localeCompare(String(a.date)));
+    return fs.readdirSync(POSTS).filter(f => f.endsWith('.json')).map(f => {
+      try { const p = readPost(f.slice(0, -5)); return { id: p.id, title: p.title, date: p.date, summary: p.summary, tag: tagOf(p), published: p.published !== false }; } catch (e) { return null; }
+    }).filter(Boolean);
+  };
+  if (url === '/api/posts' && req.method === 'GET') {
+    const tag = new URL(req.url, 'http://x').searchParams.get('tag') || 'all'; // url 已去掉 query，这里单独解析
+    if (tag !== 'all' && !TAGS.includes(tag)) return send(res, 400, { error: '标签只能是 all、original、paper、news' });
+    const list = listPosts().filter(p => p.published || authed(req)).filter(p => tag === 'all' || p.tag === tag).sort((a, b) => String(b.date).localeCompare(String(a.date)));
     return send(res, 200, list);
+  }
+  if (url === '/api/tags' && req.method === 'GET') { // 各标签计数，只统计已发布
+    const c = { original: 0, paper: 0, news: 0 };
+    listPosts().filter(p => p.published).forEach(p => c[p.tag]++);
+    return send(res, 200, c);
   }
   const m = url.match(/^\/api\/posts\/([^/]+)$/);
   if (m) {

@@ -1,0 +1,12 @@
+{
+  "id": "paper-2026-11-27-b911b823",
+  "title": "Mixture-of-Loops Transformer",
+  "date": "2026-11-27",
+  "tag": "paper",
+  "summary": "提出 MoLA，用 KV 作为跨深度、跨 loop 的可选复用内存；U-MoLT 在 400B token 预训练中，700M 上取得 1.7× 验证 CE token 效率。",
+  "body": "今天推荐读的一篇论文是《Mixture-of-Loops Transformer》（arXiv:2611.34923），作者：Lianghui Zhu, Shijie Wang, Xinggang Wang, Jinze Bai（华中科大 hustvl）。它主要讲的是：提出 MoLA，用 KV 作为跨深度、跨 loop 的可选复用内存；U-MoLT 在 400B token 预训练中，700M 上取得 1.7× 验证 CE token 效率。\n\n## 为什么值得读\n\nlooped transformer 一直是「表达力换效率」的典型，这篇的贡献是把这个取舍拆回设计层面——到底该在 loop 之间传递什么（残差流还是 KV），并给出小模型上真实的 pretrain 收益和端到端不变的延迟。做架构实验的人可以直接跑代码。\n\n## 核心贡献\n\n提出 MoLA，用 KV 作为跨深度、跨 loop 的可选复用内存；U-MoLT 在 400B token 预训练中，700M 上取得 1.7× 验证 CE token 效率，3B MoE 的 10 任务准确率提升 2.1pp、10 域困惑度改善 0.75；对 Qwen3.5-0.8B-Base 继续预训练 100B token，11 个域全部改善，平均 token 效率 1.4×。\n\n关键是推理延迟没有变差（996.6 vs 1000.6 ms，S 尺寸）。\n\n## 怎么用到我的工作里\n\n这篇偏模型架构，适合先小规模复现再决定要不要采用：挑一个 10 亿参数以内的开源模型，按论文设置跑一组对照实验，重点看效率收益和推理延迟能不能同时成立。如果只做应用层，把它当选型参考就行，等开源实现和推理框架支持后再评估成本变化。\n\n原文链接：https://arxiv.org/abs/2611.34923",
+  "link": "https://arxiv.org/abs/2611.34923",
+  "source": "2026-11-27_08-06-51.md",
+  "published": true,
+  "createdAt": "2026-11-27T07:47:21.238Z"
+}
