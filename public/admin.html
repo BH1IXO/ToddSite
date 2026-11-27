@@ -20,7 +20,7 @@ h1{font-size:1.4rem;margin:0 0 6px}
 .mute{color:var(--mute);font-size:.88rem}
 .login{max-width:380px;margin:18vh auto 0;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:28px}
 label{display:block;font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;color:var(--mute);margin:14px 0 4px}
-input,textarea{width:100%;font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:8px 10px}
+input,textarea,select{width:100%;font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:8px 10px}
 textarea{min-height:84px;resize:vertical}
 button{font:inherit;cursor:pointer;border-radius:5px;border:1px solid var(--line);background:var(--card);color:var(--fg);padding:7px 14px}
 button:hover{border-color:var(--accent)}
@@ -105,6 +105,7 @@ legend{font-family:var(--mono);font-size:.78rem;letter-spacing:.1em;color:var(--
     <div id='post-editor' class='row' hidden>
       <div class='two'><div><label for='p-id'>ID（小写字母、数字、短横线，决定文章网址 /post/ID）</label><input id='p-id'></div><div><label for='p-date'>DATE</label><input id='p-date' placeholder='2026-11-20'></div></div>
       <label for='p-title'>TITLE</label><input id='p-title'>
+      <label for='p-tag'>CATEGORY 分类</label><select id='p-tag'><option value='original'>原创（original）</option><option value='paper'>论文（paper）</option><option value='news'>资讯（news）</option></select>
       <label for='p-summary'>SUMMARY 简介（100 字左右）</label><textarea id='p-summary'></textarea>
       <label for='p-body'>BODY 正文（空行分段；以 # 开头的行是小标题）</label><div class='acts' style='justify-content:flex-start'><input type='file' id='p-upload' accept='image/png,image/jpeg,image/gif,image/webp' style='width:auto'><button id='p-insert' type='button'>上传并插入图片</button><span id='up-msg' class='msg' role='status'></span></div><textarea id='p-body' style='min-height:320px'></textarea>
       <label class='chk'><input type='checkbox' id='p-pub' checked> 发布（取消勾选就是草稿，前台看不到）</label>
@@ -167,17 +168,17 @@ legend{font-family:var(--mono);font-size:.78rem;letter-spacing:.1em;color:var(--
   function areaRow(a){a=a||{};return '<div class="row"><div class="two"><div><label>KEY</label><input data-f="key" value="'+esc(a.key)+'"></div><div><label>TITLE</label><input data-f="title" value="'+esc(a.title)+'"></div></div><label>DESC</label><textarea data-f="desc">'+esc(a.desc)+'</textarea><label>POINTS（每行一条）</label><textarea data-f="points">'+esc((a.points||[]).join('\n'))+'</textarea><label>ITEMS 项目（每行一个：状态 | 名称 | 链接 | 说明；状态写 在做 或 做过）</label><textarea data-f="items" style="min-height:130px">'+esc(itemsToText(a.items))+'</textarea><div class="acts"><span></span><button type="button" class="danger" data-del>删除</button></div></div>'}
   function lifeRow(x){x=x||{};return '<div class="row"><label>TITLE</label><input data-f="title" value="'+esc(x.title)+'"><label>DESC</label><textarea data-f="desc">'+esc(x.desc)+'</textarea><div class="acts"><span></span><button type="button" class="danger" data-del>删除</button></div></div>'}
   function socialRow(s){s=s||{};return '<div class="row"><div class="two"><div><label>NAME</label><input data-f="name" value="'+esc(s.name)+'"></div><div><label>HANDLE</label><input data-f="handle" value="'+esc(s.handle)+'"></div></div><label>URL（可留空）</label><input data-f="url" value="'+esc(s.url)+'"><div class="acts"><span></span><button type="button" class="danger" data-del>删除</button></div></div>'}
-  var editing=false;
+  var editing=false,TAGN={original:'原创',paper:'论文',news:'资讯'};
   function loadPosts(){
     api('GET','/api/posts').then(function(list){
       $('posts-list').className='plist';
-      $('posts-list').innerHTML=list.length?list.map(function(p){return '<div class="pitem"><div><b>'+esc(p.title)+'</b> <small>'+esc(p.date||'')+' · /post/'+esc(p.id)+(p.published?'':' · 草稿')+'</small></div><div class="acts"><button type="button" data-edit="'+esc(p.id)+'">编辑</button><button type="button" class="danger" data-delpost="'+esc(p.id)+'">删除</button></div></div>'}).join(''):'<p class="mute">还没有文章。点下面“新建文章”。</p>';
+      $('posts-list').innerHTML=list.length?list.map(function(p){return '<div class="pitem"><div><b>'+esc(p.title)+'</b> <small>'+esc(p.date||'')+' · '+esc(TAGN[p.tag]||'原创')+' · /post/'+esc(p.id)+(p.published?'':' · 草稿')+'</small></div><div class="acts"><button type="button" data-edit="'+esc(p.id)+'">编辑</button><button type="button" class="danger" data-delpost="'+esc(p.id)+'">删除</button></div></div>'}).join(''):'<p class="mute">还没有文章。点下面“新建文章”。</p>';
     }).catch(function(e){say('save-msg',e.message,'err')});
   }
   function openEditor(p,isNew){
     $('post-editor').hidden=false;editing=true;
     $('p-id').value=p.id||'';$('p-id').readOnly=!isNew;$('p-date').value=p.date||new Date().toISOString().slice(0,10);
-    $('p-title').value=p.title||'';$('p-summary').value=p.summary||'';$('p-body').value=p.body||'';$('p-pub').checked=p.published!==false;
+    $('p-title').value=p.title||'';$('p-tag').value=TAGN[p.tag]?p.tag:'original';$('p-summary').value=p.summary||'';$('p-body').value=p.body||'';$('p-pub').checked=p.published!==false;
     say('post-msg','');$('p-title').focus();
   }
   $('posts-add').addEventListener('click',function(){openEditor({},true)});
@@ -186,7 +187,7 @@ legend{font-family:var(--mono);font-size:.78rem;letter-spacing:.1em;color:var(--
     var id=$('p-id').value.trim();
     if(!/^[a-z0-9][a-z0-9-]{0,63}$/.test(id)){say('post-msg','ID 只能用小写字母、数字和短横线','err');return}
     say('post-msg','保存中…');
-    api('PUT','/api/posts/'+encodeURIComponent(id),{title:$('p-title').value,date:$('p-date').value,summary:$('p-summary').value,body:$('p-body').value,published:$('p-pub').checked}).then(function(){say('post-msg','已保存','ok');loadPosts()}).catch(function(e){say('post-msg',e.message,'err')});
+    api('PUT','/api/posts/'+encodeURIComponent(id),{title:$('p-title').value,date:$('p-date').value,tag:$('p-tag').value,summary:$('p-summary').value,body:$('p-body').value,published:$('p-pub').checked}).then(function(){say('post-msg','已保存','ok');loadPosts()}).catch(function(e){say('post-msg',e.message,'err')});
   });
   document.addEventListener('click',function(e){
     var ed=e.target.closest&&e.target.closest('[data-edit]');

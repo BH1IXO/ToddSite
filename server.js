@@ -204,7 +204,13 @@ async function api(req, res, url) {
       try { o = JSON.parse(await readBody(req, 600000)); } catch (e) { return send(res, 400, { error: '内容不是合法 JSON' }); }
       if (!o || !String(o.title || '').trim()) return send(res, 400, { error: '标题不能为空' });
       fs.mkdirSync(POSTS, { recursive: true });
-      const post = { id, title: String(o.title).trim(), date: String(o.date || '').trim(), summary: String(o.summary || '').trim(), body: String(o.body || ''), published: o.published !== false };
+      const prev = (() => { try { return readPost(id); } catch (e) { return {}; } })(); // 原文件（不存在或损坏则为空），用于保留 tag/link/source/createdAt
+      if (o.tag != null && !TAGS.includes(o.tag)) return send(res, 400, { error: '标签只能是 original、paper、news' }); // 传了非法值不静默降级
+      const post = { id, title: String(o.title).trim(), date: String(o.date || '').trim(), tag: o.tag != null ? o.tag : tagOf(prev), summary: String(o.summary || '').trim(), body: String(o.body || '') }; // tag 缺失则沿用原文件，新建默认 original
+      if (prev.link) post.link = prev.link;
+      if (prev.source) post.source = prev.source;
+      post.published = o.published !== false;
+      if (prev.createdAt) post.createdAt = prev.createdAt;
       fs.writeFileSync(file + '.tmp', JSON.stringify(post, null, 2));
       fs.renameSync(file + '.tmp', file);
       return send(res, 200, { ok: true });
