@@ -213,13 +213,20 @@ footer a{display:inline-block;padding:12px 0;margin:-12px 0}
     $('areas').innerHTML="<div class=head><div><p class=kicker>Done &amp; doing</p><h2>做过的和正在做的</h2></div><p class=lead>六个方向，一条主线：把 AI 从概念推到能上线、能算账的那一层。</p></div><div class=dirs>"+rows+"</div>";
   }
 
+  function k12Banner(d){
+    var g=((d.courses||{}).groups||[]).filter(function(x){return x.id==='k12-ai'})[0];
+    if(!g)return '';
+    var n=(g.lessons||[]).length,st=g.status==='wip'?'筹备中':(n?n+' 讲':'整理中');
+    return '<a class="card life" href="/k12" style="margin-top:22px;min-height:0;text-decoration:none"><span class="idx">专区 / K12</span><h3>'+esc(g.title)+'</h3><p>'+esc(g.subtitle||'')+'</p><div class="foot"><span>'+esc(st)+'</span><span>进入专区 →</span></div></a>';
+  }
+
   function renderLife(d){
     var list=d.life||[];
     if(!list.length){$('life-box').innerHTML='';return}
     var cards=list.map(function(x,i){
       return '<div class="card life"><span class="idx">'+pad2(i+1)+'</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.desc)+'</p></div>';
     }).join('');
-    $('life-box').innerHTML='<div class="head"><div><p class="kicker">Life</p><h2>工作之外</h2></div><p class="lead">这些也是我的一部分，不少想法反而是从这里来的。</p></div><div class="grid3">'+cards+'</div>';
+    $('life-box').innerHTML='<div class="head"><div><p class="kicker">Life</p><h2>工作之外</h2></div><p class="lead">这些也是我的一部分，不少想法反而是从这里来的。</p></div><div class="grid3">'+cards+'</div>'+k12Banner(d);
   }
 
   function renderOffers(d){

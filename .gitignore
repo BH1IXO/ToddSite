@@ -1,6 +1,7 @@
 node_modules/
 data/backup/
 data/users/
+data/comments.json
 public/posts-img/uploads/
 .shots/
 .DS_Store

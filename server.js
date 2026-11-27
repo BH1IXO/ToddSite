@@ -40,7 +40,7 @@ function blocked(ip) {
 const DS_KEY = process.env.DEEPSEEK_API_KEY || '';
 const DS_URL = process.env.DEEPSEEK_API_URL || 'https://api.deepseek.com/chat/completions';
 const DS_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-chat';
-const chatHits = new Map();
+const chatHits = new Map(), commentHits = new Map();
 let siteDay = { d: '', n: 0 };
 function clientIp(req) {
   return (process.env.TRUST_PROXY && String(req.headers['x-forwarded-for'] || '').split(',')[0].trim()) || req.socket.remoteAddress;
@@ -245,11 +245,66 @@ async function api(req, res, url) {
     try { o = JSON.parse(await readBody(req, 2000)); } catch (e) {}
     const uid = String(o.uid || '');
     if (!MEM.uidOk(uid)) return send(res, 400, { error: 'uid 不对' });
-    for (const k of ['profile', 'log', 'meta']) {
+    for (const k of ['profile', 'log', 'meta', 'chat']) {
       const f = MEM.paths(USERS, uid)[k];
       try { if (fs.existsSync(f)) fs.unlinkSync(f); } catch (e) {}
     }
     return send(res, 200, { ok: true }, 'application/json; charset=utf-8');
+  }
+  // ---- 后台：访客对话记录 ----
+  if (url === '/api/admin/chats' && req.method === 'GET') {
+    if (!authed(req)) return send(res, 401, { error: '未登录或登录已过期' });
+    const list = MEM.listUsers(USERS), today = new Date().toISOString().slice(0, 10);
+    return send(res, 200, { visitors: list.length, messages: list.reduce((s, x) => s + x.turns, 0), activeToday: list.filter(x => String(x.lastSeen).slice(0, 10) === today).length, list });
+  }
+  const chatM = url.match(/^\/api\/admin\/chats\/([a-f0-9]{24,48})$/);
+  if (chatM && req.method === 'GET') {
+    if (!authed(req)) return send(res, 401, { error: '未登录或登录已过期' });
+    const d = MEM.loadProfile(USERS, chatM[1]);
+    return send(res, 200, { uid: chatM[1], firstSeen: d.firstSeen || '', lastSeen: d.lastSeen || '', visits: d.visits || 0, messages: MEM.readChat(USERS, chatM[1]) });
+  }
+  // ---- 评论：访客提交先进待审，审核通过才对外显示 ----
+  const CF = path.join(ROOT, 'data', 'comments.json');
+  const loadC = () => { try { const a = JSON.parse(fs.readFileSync(CF, 'utf-8')); return Array.isArray(a) ? a : []; } catch (e) { return []; } };
+  const saveC = a => { fs.mkdirSync(path.dirname(CF), { recursive: true }); fs.writeFileSync(CF + '.tmp', JSON.stringify(a, null, 2)); fs.renameSync(CF + '.tmp', CF); };
+  const cmP = url.match(/^\/api\/posts\/([a-z0-9][a-z0-9-]{0,63})\/comments$/);
+  if (cmP) {
+    const pid = cmP[1];
+    let post = null; try { post = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'posts', pid + '.json'), 'utf-8')); } catch (e) {}
+    if (!post || post.published === false) return send(res, 404, { error: '文章不存在' });
+    if (req.method === 'GET') return send(res, 200, loadC().filter(c => c.postId === pid && c.status === 'approved').sort((a, b) => String(a.at).localeCompare(String(b.at))).map(c => ({ id: c.id, name: c.name, content: c.content, at: c.at })));
+    if (req.method === 'POST') {
+      const ip = clientIp(req), now = Date.now(), h = (commentHits.get(ip) || []).filter(t => now - t < 3600000);
+      if (h.length >= 5) return send(res, 429, { error: '留言太频繁了，请稍后再试。' });
+      let o; try { o = JSON.parse(await readBody(req, 5000)); } catch (e) { return send(res, 400, { error: '请求格式不对' }); }
+      if (o && o.website) return send(res, 200, { ok: true, pending: true }); // 蜜罐字段，真人不会填
+      const name = String((o && o.name) || '').trim().slice(0, 30), content = String((o && o.content) || '').trim().slice(0, 1000);
+      if (!name || content.length < 2) return send(res, 400, { error: '请填写昵称和留言内容' });
+      const all = loadC();
+      if (all.filter(c => c.status === 'pending').length >= 200) return send(res, 503, { error: '待审留言太多，请稍后再来。' });
+      all.push({ id: crypto.randomBytes(6).toString('hex'), postId: pid, postTitle: String(post.title || ''), name, content, status: 'pending', at: new Date().toISOString() });
+      saveC(all); h.push(now); commentHits.set(ip, h); if (commentHits.size > 5000) commentHits.clear();
+      return send(res, 200, { ok: true, pending: true });
+    }
+  }
+  if (url === '/api/admin/comments' && req.method === 'GET') {
+    if (!authed(req)) return send(res, 401, { error: '未登录或登录已过期' });
+    const st = new URL(req.url, 'http://x').searchParams.get('status') || 'pending', all = loadC();
+    return send(res, 200, { pending: all.filter(c => c.status === 'pending').length, list: all.filter(c => st === 'all' || c.status === st).sort((a, b) => String(b.at).localeCompare(String(a.at))) });
+  }
+  const cmA = url.match(/^\/api\/admin\/comments\/([a-f0-9]{12})$/);
+  if (cmA && (req.method === 'POST' || req.method === 'DELETE')) {
+    if (!authed(req)) return send(res, 401, { error: '未登录或登录已过期' });
+    const all = loadC(), i = all.findIndex(c => c.id === cmA[1]);
+    if (i < 0) return send(res, 404, { error: '留言不存在' });
+    if (req.method === 'DELETE') all.splice(i, 1);
+    else {
+      let o = {}; try { o = JSON.parse(await readBody(req, 1000)); } catch (e) {}
+      if (!['approved', 'rejected', 'pending'].includes(o.status)) return send(res, 400, { error: 'status 只能是 approved、rejected、pending' });
+      all[i].status = o.status;
+    }
+    saveC(all);
+    return send(res, 200, { ok: true });
   }
   if (url === '/api/upload' && req.method === 'POST') {
     if (!authed(req)) return send(res, 401, { error: '未登录或登录已过期' });
@@ -371,6 +426,7 @@ http.createServer(async (req, res) => {
     if (url === '/posts') { res.writeHead(301, { Location: '/blog' }); return res.end(); }
     if (url === '/blog') url = '/blog.html';
     if (url === '/courses') url = '/courses.html';
+    if (url === '/k12') url = '/k12.html';
     if (url === '/chat') url = '/chat.html';
     if (/^\/post\/[a-z0-9-]+$/.test(url)) url = '/post.html';
     const file = path.normalize(path.join(PUB, url));

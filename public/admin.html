@@ -142,6 +142,15 @@ select{min-height:44px}
     </div>
     <button id='posts-add' class='add' type='button'>+ 新建文章</button>
   </fieldset>
+  <fieldset><legend>COMMENTS · 留言审核（通过后才对外显示）</legend>
+    <div class='acts' style='justify-content:flex-start'><button id='cm-refresh' type='button'>刷新</button><span id='cm-sum' class='mute'></span></div>
+    <div id='cm-admin' class='plist'></div>
+  </fieldset>
+  <fieldset><legend>VISITORS · 分身访客记录</legend>
+    <div class='acts' style='justify-content:flex-start'><button id='vs-refresh' type='button'>刷新</button><span id='vs-sum' class='mute'></span></div>
+    <div id='vs-list' class='plist'></div>
+    <div id='vs-chat'></div>
+  </fieldset>
   <fieldset><legend>LIFE · 生活</legend>
     <div id='life-list'></div>
     <button id='life-add' class='add' type='button'>+ 添加一项</button>
@@ -238,13 +247,25 @@ select{min-height:44px}
     }).catch(function(e){say('up-msg',e.message,'err')});
   });
   $('av-up').addEventListener('click',function(){var f=$('av-file').files[0];if(!f){say('av-msg','请先选择一张图片','err');return}if(f.size>10*1024*1024){say('av-msg','图片不能超过 10MB','err');return}say('av-msg','上传中…');fileToB64(f).then(function(b){return api('POST','/api/upload',{name:f.name,data:b})}).then(function(j){$('f-avatar').value=j.url;$('av-file').value='';say('av-msg','已替换，请点顶部“保存”后生效','ok')}).catch(function(e){say('av-msg',e.message,'err')})});
+  function fmt(t){return esc(String(t||'').slice(0,16).replace('T',' '))}
+  function loadComments(){api('GET','/api/admin/comments?status=all').then(function(r){var N={pending:'待审',approved:'已通过',rejected:'已拒绝'};$('cm-sum').textContent='待审 '+r.pending+' 条，共 '+r.list.length+' 条';$('cm-admin').innerHTML=r.list.length?r.list.map(function(c){return '<div class="pitem"><div><b>'+esc(c.name)+'</b> <small>'+fmt(c.at)+' · '+(N[c.status]||esc(c.status))+' · 《'+esc(c.postTitle)+'》</small><div style="white-space:pre-wrap">'+esc(c.content)+'</div></div><div class="acts">'+(c.status!=='approved'?'<button type="button" class="primary" data-cmset="'+esc(c.id)+'" data-st="approved">通过</button>':'')+(c.status!=='rejected'?'<button type="button" data-cmset="'+esc(c.id)+'" data-st="rejected">拒绝</button>':'')+'<button type="button" class="danger" data-cmdel="'+esc(c.id)+'">删除</button></div></div>'}).join(''):'<p class="mute">还没有留言。</p>'}).catch(function(e){say('save-msg',e.message,'err')})}
+  function loadVisitors(){api('GET','/api/admin/chats').then(function(r){$('vs-sum').textContent='共 '+r.visitors+' 位访客聊过，'+r.messages+' 条提问，今天活跃 '+r.activeToday+' 位';$('vs-list').innerHTML=r.list.length?r.list.map(function(v){return '<div class="pitem"><div><b>访客 '+esc(v.uid.slice(0,6))+'</b> <small>首次 '+fmt(v.firstSeen)+' · 最近 '+fmt(v.lastSeen)+' · '+v.visits+' 次到访 · '+v.turns+' 问</small><div class="mute">'+esc(v.first)+'</div></div><div class="acts"><button type="button" data-vs="'+esc(v.uid)+'">查看对话</button></div></div>'}).join(''):'<p class="mute">还没有人聊过。</p>'}).catch(function(e){say('save-msg',e.message,'err')})}
+  $('cm-refresh').addEventListener('click',loadComments);$('vs-refresh').addEventListener('click',loadVisitors);
+  document.addEventListener('click',function(e){
+    var s=e.target.closest&&e.target.closest('[data-cmset]');
+    if(s){api('POST','/api/admin/comments/'+encodeURIComponent(s.getAttribute('data-cmset')),{status:s.getAttribute('data-st')}).then(loadComments).catch(function(x){say('save-msg',x.message,'err')})}
+    var d=e.target.closest&&e.target.closest('[data-cmdel]');
+    if(d){if(d.getAttribute('data-sure')!=='1'){d.setAttribute('data-sure','1');d.textContent='再点一次确认删除';return}api('DELETE','/api/admin/comments/'+encodeURIComponent(d.getAttribute('data-cmdel'))).then(loadComments).catch(function(x){say('save-msg',x.message,'err')})}
+    var v=e.target.closest&&e.target.closest('[data-vs]');
+    if(v){api('GET','/api/admin/chats/'+encodeURIComponent(v.getAttribute('data-vs'))).then(function(r){var box=$('vs-chat');box.innerHTML='<div class="row"><b>访客 '+esc(r.uid.slice(0,6))+' 的完整对话（'+r.messages.length+' 条）</b>'+r.messages.map(function(m){return '<div><small class="mute">'+fmt(m.t)+' · '+(m.role==='user'?'访客':'分身')+'</small><div style="white-space:pre-wrap">'+esc(m.content)+'</div></div>'}).join('')+'</div>';box.scrollIntoView({behavior:'smooth',block:'nearest'})}).catch(function(x){say('save-msg',x.message,'err')})}
+  });
   function fillList(id,arr,fn){$(id).innerHTML=(arr||[]).map(fn).join('')}
   function fillForm(d){
     var p=d.profile||{},c=d.contact||{};
     $('f-name').value=p.name||'';$('f-alias').value=p.alias||'';$('f-headline').value=p.headline||'';$('f-intro').value=p.intro||'';$('f-avatar').value=p.avatar||'';
     fillList('facts-list',d.facts,factRow);fillList('offers-list',d.offers,offerRow);fillList('projects-list',d.projects,projRow);
     var cs=d.courses||{},gs=Array.isArray(cs.groups)?cs.groups:(cs.lessons?[{id:'vibe-coding',title:cs.title,subtitle:cs.intro,status:'open',lessons:cs.lessons}]:[]);fillList('groups-list',gs,groupRow);
-    fillList('areas-list',d.workAreas,areaRow);loadPosts();fillList('life-list',d.life,lifeRow);fillList('socials-list',d.socials,socialRow);
+    fillList('areas-list',d.workAreas,areaRow);loadPosts();loadComments();loadVisitors();fillList('life-list',d.life,lifeRow);fillList('socials-list',d.socials,socialRow);
     $('f-email').value=c.email||'';$('f-wechat').value=c.wechat||'';$('f-github').value=(c.github||[]).join('\n');$('f-note').value=c.note||'';
   }
   function rows(id,keys){
