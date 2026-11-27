@@ -127,7 +127,44 @@ footer a{text-underline-offset:3px}
 @media (max-width:860px){.hero{grid-template-columns:1fr}.portrait{max-width:200px}.grid2,.grid3{grid-template-columns:1fr}.posts a,.posts .row{grid-template-columns:1fr;gap:4px}}
 @media (max-width:760px){nav{display:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
-body{font-size:17px}nav{font-size:15.5px}.lead{font-size:1.1rem}.head .lead{font-size:15px}.btn{font-size:15px;padding:10px 22px}.facts .v{font-size:16px}.mini b{font-size:15.5px}.mini p{font-size:14px}.dir-l p{font-size:15.5px}.dir h3{font-size:22px}.dir .tag,.kicker,.facts .k,.card .idx,.life .idx{font-size:12.5px}.card h3{font-size:19px}.card>p{font-size:15px}.contact-list .v{font-size:17px}.dir-r .empty{font-size:14.5px}.hero-meta{font-size:14px}.chips li{font-size:12px}</style>
+body{font-size:17px}nav{font-size:15.5px}.lead{font-size:1.1rem}.head .lead{font-size:15px}.btn{font-size:15px;padding:10px 22px}.facts .v{font-size:16px}.mini b{font-size:15.5px}.mini p{font-size:14px}.dir-l p{font-size:15.5px}.dir h3{font-size:22px}.dir .tag,.kicker,.facts .k,.card .idx,.life .idx{font-size:12.5px}.card h3{font-size:19px}.card>p{font-size:15px}.contact-list .v{font-size:17px}.dir-r .empty{font-size:14.5px}.hero-meta{font-size:14px}.chips li{font-size:12px}
+/* 防溢出兜底 */
+html,body{max-width:100%;overflow-x:hidden}
+@supports (overflow:clip){html,body{overflow-x:clip}}
+img,video,pre,table{max-width:100%}
+h1,h2,h3,h4,h5,h6,p{overflow-wrap:break-word;word-break:break-word}
+/* 手机：首页 hero 单栏、标题与头像方块缩小 */
+@media (max-width:768px){
+.hero{grid-template-columns:1fr;gap:24px}
+.hero h1{font-size:clamp(1.7rem,7.5vw,2.2rem)}
+.portrait{max-width:120px;font-size:56px}
+}
+/* 手机：导航不撑破页面 */
+@media (max-width:480px){
+.bar nav{gap:12px;font-size:14px;flex-wrap:nowrap;overflow-x:auto;min-width:0;scrollbar-width:none}
+.bar nav::-webkit-scrollbar{display:none}
+.bar nav a{flex:none;white-space:nowrap}
+}
+/* 手机补充：恢复首页导航、点击区域不低于44px、头像上移、间距收紧 */
+@media (max-width:760px){
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+header.top nav{display:flex;gap:0;font-size:14px;flex-wrap:nowrap;overflow-x:auto;min-width:0;margin-right:-5px;scrollbar-width:none}
+header.top nav::-webkit-scrollbar{display:none}
+header.top nav a{flex:none;white-space:nowrap;display:flex;align-items:center;min-height:44px;padding:0 5px}
+.bar{gap:8px}
+.logo{display:flex;align-items:center;min-height:44px;font-size:16px;white-space:nowrap}
+section.sec{padding-top:28px;padding-bottom:32px}
+.hero{padding-top:8px}
+.portrait{order:-1;max-width:88px;font-size:40px}
+.hero-actions .btn{flex:1 1 auto;justify-content:center;min-height:44px}
+.life{min-height:0}
+.card .foot a{padding:11px 0 11px 16px;margin:-11px 0}
+.contact-list a{display:inline-block;padding:10px 0;margin:-10px 0}
+footer{padding-bottom:72px}
+footer a{display:inline-block;padding:12px 0;margin:-12px 0}
+}
+@media (hover:none){.card:hover{transform:none}}
+</style>
 <link rel='stylesheet' href='/theme.css'>
 </head>
 <body>

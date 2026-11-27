@@ -35,6 +35,37 @@ h1{font-size:clamp(2.2rem,5vw,3.2rem);letter-spacing:-.04em;margin:10px 0 0;font
 .tags button:hover{background:var(--soft);color:var(--fg)}
 .tags button.on{background:var(--accent);border-color:var(--accent);color:var(--bg)}
 .tags button .n{font-family:var(--mono);font-size:12.5px;margin-left:6px;opacity:.7}
+/* 防溢出兜底 */
+html,body{max-width:100%;overflow-x:hidden}
+@supports (overflow:clip){html,body{overflow-x:clip}}
+img,video,pre,table{max-width:100%}
+h1,h2,h3,h4,h5,h6,p{overflow-wrap:break-word;word-break:break-word}
+/* 手机：导航与博客列表 */
+@media (max-width:480px){
+.bar nav{gap:12px;font-size:14px;flex-wrap:nowrap;overflow-x:auto;min-width:0;scrollbar-width:none}
+.bar nav::-webkit-scrollbar{display:none}
+.bar nav a{flex:none;white-space:nowrap}
+.posts h3{font-size:17px}
+.posts a{padding:18px 0}
+}
+/* 手机补充：导航点击区域、标签栏边到边滚动、去掉单独占行的箭头 */
+@media (max-width:760px){
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+}
+@media (max-width:700px){
+.posts a>span.date:last-child{display:none}
+}
+@media (max-width:480px){
+.bar{gap:8px;font-size:15px}
+.bar a{display:flex;align-items:center;min-height:44px;white-space:nowrap}
+.bar nav{gap:0;margin-right:-6px}
+.bar nav a{padding:0 6px}
+main{padding-top:28px;padding-bottom:56px}
+h1{line-height:1.25}
+.tags{margin:16px calc(-1*clamp(18px,4vw,56px)) 0;padding:0 clamp(18px,4vw,56px)}
+.tags button{min-height:44px;padding:0 16px}
+.lead{margin:14px 0 18px;font-size:15px}
+}
 </style>
 <link rel='stylesheet' href='/theme.css'>
 </head>

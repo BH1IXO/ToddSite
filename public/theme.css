@@ -33,3 +33,11 @@ a:hover{color:var(--accent,inherit)}
 .dirs{border-top:2px solid var(--accent,var(--line))}
 .bar nav .on{color:var(--accent,var(--fg))!important}
 .tf-btn{background:var(--accent,var(--fg))!important;border-color:var(--accent,var(--fg))!important}
+
+/* 手机：悬浮主题按钮避开安全区，点击区域不低于44px */
+@media (max-width:768px){
+.theme-fab{right:12px;bottom:12px;padding-bottom:env(safe-area-inset-bottom,0px)}
+.tf-btn{min-height:44px;min-width:44px;padding:0 16px;font-size:13px}
+.tf-opt{min-height:44px;font-size:14px}
+.tf-panel{min-width:160px}
+}
