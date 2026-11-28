@@ -9,3 +9,4 @@ public/posts-img/uploads/
 .env.*
 !.env.example
 data/logs/
+data/kb/

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang='zh-CN'>
+<head>
+<meta charset='utf-8'>
+<meta name='viewport' content='width=device-width,initial-scale=1'>
+<meta name='robots' content='noindex,nofollow'>
+<title>知识库 · 只读</title>
+<style>
+:root{--bg:#FAF8F5;--fg:#1B1B1F;--mute:#6B6B73;--line:#E6E2DB;--card:#FFF;--accent:#E4572E;--err:#C62828;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--sans:-apple-system,BlinkMacSystemFont,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#131316;--fg:#EDEAE4;--mute:#9A9AA3;--line:#2A2A30;--card:#1B1B20;--accent:#FF7A52;--err:#EF5350}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:15px;line-height:1.7}
+.wrap{max-width:900px;margin:0 auto;padding:24px 20px}
+h1{font-size:1.3rem;margin:0 0 4px}
+.mute{color:var(--mute);font-size:.88rem}
+.topbar{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--line);padding:12px 0}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-top:0;padding-bottom:0}
+.topbar a{color:var(--mute);text-underline-offset:3px;font-size:.88rem}
+input,button{font:inherit;color:var(--fg);background:var(--card);border:1px solid var(--line);border-radius:5px;padding:8px 10px}
+button{cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.stats{display:flex;gap:18px;flex-wrap:wrap;margin:18px 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);border-radius:8px}
+.stats b{font-variant-numeric:tabular-nums}
+.search{display:flex;gap:8px;margin:18px 0}
+.search input{flex:1}
+.item{padding:12px 14px;margin-top:10px;background:var(--card);border:1px solid var(--line);border-radius:6px}
+.item h3{font-size:.98rem;margin:0 0 4px}
+.tag{display:inline-block;font-family:var(--mono);font-size:.7rem;letter-spacing:.05em;color:var(--mute);border:1px solid var(--line);border-radius:4px;padding:1px 6px;margin-left:6px}
+pre{white-space:pre-wrap;word-break:break-word;margin:8px 0 0;font-family:var(--sans)}
+.err{color:var(--err)}
+</style>
+</head>
+<body>
+<div class='topbar'><div class='wrap'>
+  <strong>知识库（只读）</strong>
+  <div><a href='/admin'>回后台</a> · <span class='mute'>写入用命令行：node scripts/kb.js add</span></div>
+</div></div>
+<div class='wrap'>
+  <div id='login' style='display:none'>
+    <label>后台密码</label>
+    <div class='search'><input id='pw' type='password' autocomplete='current-password'><button class='primary' id='login-btn' type='button'>登录</button></div>
+    <p id='login-msg' class='mute'></p>
+  </div>
+
+  <div id='view' style='display:none'>
+    <h1>知识库</h1>
+    <p class='mute'>这里只能看，不能改。新增、删除都走命令行，索引会自动更新。</p>
+    <div class='stats' id='stats'></div>
+    <div class='search'><input id='q' placeholder='输入关键词试一次检索，看看分身会拿到什么资料'><button class='primary' id='go' type='button'>检索</button></div>
+    <div id='hits'></div>
+    <h2 style='font-size:1rem;margin-top:26px'>全部文档 <span class='mute' id='doc-count'></span></h2>
+    <div id='docs'></div>
+    <h2 style='font-size:1rem;margin-top:26px'>隔离区 <span class='mute' id='q-count'></span></h2>
+    <p class='mute'>入库时被判定为私事、对他人评价或未公开商业信息的段落，不会进检索库，只在这里留底。</p>
+    <div id='quar'></div>
+  </div>
+  <p id='msg' class='err'></p>
+</div>
+<script>
+(function(){
+  var token='', $=function(id){return document.getElementById(id)};
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function api(method,p,body){
+    var h={'Content-Type':'application/json'};if(token)h['X-Token']=token;
+    return fetch(p,{method:method,headers:h,body:body?JSON.stringify(body):undefined}).then(function(r){
+      return r.json().catch(function(){return {}}).then(function(j){
+        if(r.status===401){token='';try{sessionStorage.removeItem('admin-token')}catch(e){}showLogin();throw new Error('登录已过期，请重新登录')}
+        if(!r.ok)throw new Error(j.error||('请求失败 '+r.status));
+        return j;
+      });
+    });
+  }
+  function showLogin(){$('login').style.display='';$('view').style.display='none'}
+  function fmtBytes(n){return n>1048576?(n/1048576).toFixed(1)+' MB':n>1024?(n/1024).toFixed(0)+' KB':n+' B'}
+  function load(){
+    $('view').style.display='';$('login').style.display='none';$('msg').textContent='';
+    api('GET','/api/admin/kb').then(function(d){
+      var s=d.stats;
+      $('stats').innerHTML='<span>文档 <b>'+s.docs+'</b></span><span>切块 <b>'+s.chunks+'</b></span><span>索引段 <b>'+s.indexSegs+'</b></span><span>平均块长 <b>'+s.avgdl+'</b> 词</span><span>占用 <b>'+fmtBytes(s.bytes)+'</b></span><span>隔离区 <b>'+d.quarantine+'</b> 批</span>';
+      $('doc-count').textContent='（'+d.docs.length+' 篇）';
+      $('docs').innerHTML=d.docs.length?d.docs.map(function(x){
+        return '<div class="item"><h3>'+esc(x.title||x.id)+'<span class="tag">'+esc(x.kind||'未分类')+'</span></h3><div class="mute">'+esc(x.id)+' · '+x.chars+' 字 · '+x.chunks+' 段'+(x.date?' · '+esc(x.date):'')+'</div></div>';
+      }).join(''):'<p class="mute">还没有内容。用 node scripts/kb.js seed 或 add 写入。</p>';
+      return api('GET','/api/admin/kb/quarantine');
+    }).then(function(d){
+      $('q-count').textContent='（'+d.list.length+'）';
+      $('quar').innerHTML=d.list.length?d.list.slice().reverse().map(function(x){
+        return '<div class="item"><h3>'+esc(x.title||x.id)+'</h3>'+(x.chunks||[]).map(function(c){return '<div class="mute">['+esc((c.reasons||[]).join('、'))+'] '+esc(c.text.slice(0,200))+'</div>'}).join('')+'</div>';
+      }).join(''):'<p class="mute">隔离区是空的。</p>';
+    }).catch(function(e){$('msg').textContent=e.message});
+  }
+  function search(){
+    var q=$('q').value.trim();if(!q)return;
+    $('hits').innerHTML='<p class="mute">检索中…</p>';
+    api('GET','/api/admin/kb/search?q='+encodeURIComponent(q)+'&k=6').then(function(d){
+      $('hits').innerHTML='<p class="mute">'+d.hits.length+' 段命中 · '+d.ms+'ms</p>'+d.hits.map(function(h){
+        return '<div class="item"><h3>'+esc(h.title||h.doc)+'<span class="tag">分数 '+h.score+'</span></h3><pre>'+esc(h.text)+'</pre></div>';
+      }).join('');
+    }).catch(function(e){$('hits').innerHTML='<p class="err">'+esc(e.message)+'</p>'});
+  }
+  $('go').onclick=search;
+  $('q').onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();search()}};
+  $('login-btn').onclick=function(){
+    var pw=$('pw').value;
+    fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})}).then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.error||'登录失败');return j})}).then(function(j){
+      token=j.token;try{sessionStorage.setItem('admin-token',token)}catch(e){}$('pw').value='';load();
+    }).catch(function(e){$('login-msg').textContent=e.message});
+  };
+  try{var t=sessionStorage.getItem('admin-token');if(t){token=t;load()}else showLogin()}catch(e){showLogin()}
+})();
+</script>
+</body>
+</html>

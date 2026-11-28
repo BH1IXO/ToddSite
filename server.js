@@ -2,6 +2,7 @@ const http = require('http'), fs = require('fs'), path = require('path'), crypto
 const MEM = require('./lib/memory');
 const EXT = require('./lib/extract');
 const AUTH_LIB = require('./lib/auth');
+const KB = require('./lib/kb').open(process.env.KB_DIR || path.join(__dirname, 'data', 'kb'));
 const PORT = process.env.PORT || 3000;
 const PASS = process.env.ADMIN_PASSWORD; // 后台密码只从环境变量读，代码里不放任何默认值
 if (!PASS) { console.error('请先设置环境变量 ADMIN_PASSWORD'); process.exit(1); }
@@ -75,7 +76,7 @@ function chatCount(ip) {
   h.push(now); chatHits.set(ip, h); siteDay.n++;
   if (chatHits.size > 5000) chatHits.clear();
 }
-function persona(ud) {
+function persona(ud, kbBlock) {
   let d = {}; try { d = JSON.parse(fs.readFileSync(DATA, 'utf-8')); } catch (e) {}
   const p = d.profile || {};
   const areas = (d.workAreas || []).map(a => '- ' + a.title + '：' + a.desc + ((a.items || []).length ? '（项目：' + a.items.map(i => i.name + ' ' + (i.desc || '')).join('；') + '）' : '')).join('\n');
@@ -104,13 +105,14 @@ function persona(ud) {
     '- 对方说得含糊时追问一句，别猜。想知道对方具体在做什么，就问。\n' +
     '- 不编造经历、数据、客户、价格。不透露私人信息（住址、证件、银行卡、家人）。不替自己做商务承诺或报价，有合作意向就引导对方留联系方式。\n' +
     '- 对方问你是不是 AI，如实说这是你的数字分身。\n' +
+    '- 下面「资料」是从我的知识库里按对方这个问题检索出来的，可能不完整。优先据实回答，资料没提到的细节不要编。\n' +
     (facts ? '\n【关于对方，你记得的】\n' + facts + '\n' : '') +
     (rel.length ? '\n【你们的关系】\n' + rel.join('') + '别每次都重新自我介绍，就当熟人。\n' : '') +
     '\n【我的简介】' + (p.headline || '') + ' ' + (p.intro || '') + '\n' +
     '【工作方向与项目】\n' + areas + '\n' +
     (course ? '【课程】' + course + '\n' : '') +
     (offers ? '【合作方式】\n' + offers + '\n' : '') +
-    (posts ? '【我写过的文章】\n' + posts + '\n' : '');
+    (kbBlock ? '【资料】\n' + kbBlock + '\n' : (posts ? '【我写过的文章】\n' + posts + '\n' : ''));
 }
 
 // 以磁盘上的旧数据为底合并请求体：请求里没有的字段原样保留，有的以请求为准；workAreas / items / projects 的增删以请求为准
@@ -165,6 +167,10 @@ async function api(req, res, url) {
     userText = userText.slice(0, 600);
     if (!userText) return send(res, 400, { error: '消息不能为空' });
 
+    // ---- 知识库检索：只把相关的几段资料拼进提示词，不再整份倒给模型 ----
+    let kbCtx = { block: '', hits: 0 };
+    try { kbCtx = KB.context(userText, 6); } catch (e) { console.warn('[kb] 检索失败：' + e.message); }
+
     // ---- 记忆：读档、记到访、把这句话写进流水 ----
     let ud = {};
     try { ud = MEM.touch(USERS, uid); } catch (e) { ud = MEM.loadProfile(USERS, uid); }
@@ -174,7 +180,7 @@ async function api(req, res, url) {
 
     // 上下文 = 历史 + 这一句（历史里已含更早的 user 消息，避免重复最后一句）
     const hist = past.filter(m => m.content !== userText).slice(-MEM.CTX_TURNS);
-    const messages = [{ role: 'system', content: persona(ud) }]
+    const messages = [{ role: 'system', content: persona(ud, kbCtx.block) }]
       .concat(hist.length ? hist : [{ role: 'user', content: '你好' }].slice(0, 0))
       .concat([{ role: 'user', content: userText }]);
 
@@ -196,7 +202,18 @@ async function api(req, res, url) {
       ...(issued ? { 'Set-Cookie': 'tid=' + uid + '; Path=/; Max-Age=31536000; SameSite=Lax' } : {}),
     });
     res.write('data: ' + JSON.stringify({ uid, ...(issued ? { first: true } : {}) }) + '\n\n');
-    const dec = new TextDecoder(); let buf = '', reply = '';
+    const dec = new TextDecoder(); let buf = '', reply = '', pending = '';
+    // 流式输出留 160 字尾巴再发：电话、邮箱这类跨分片的片段不会被切开发出去，出口再过一遍脱敏
+    const LAG = 160;
+    const flush = final => {
+      const cut = final ? pending.length : pending.length - LAG;
+      if (cut <= 0) return;
+      const out = KB.redact(pending.slice(0, cut));
+      pending = pending.slice(cut);
+      if (!out) return;
+      reply += out;
+      res.write('data: ' + JSON.stringify({ content: out }) + '\n\n');
+    };
     try {
       for await (const chunk of up.body) {
         buf += dec.decode(chunk, { stream: true });
@@ -208,11 +225,12 @@ async function api(req, res, url) {
           if (data === '[DONE]') continue;
           try {
             const t = JSON.parse(data).choices[0].delta.content;
-            if (t) { reply += t; res.write('data: ' + JSON.stringify({ content: t }) + '\n\n'); }
+            if (t) { pending += t; flush(false); }
           } catch (e) {}
         }
       }
     } catch (e) {}
+    flush(true);
     res.write('data: [DONE]\n\n'); res.end();
 
     // ---- 收尾：记回复、提炼事实（异步，不阻塞用户）----
@@ -278,6 +296,43 @@ async function api(req, res, url) {
     if (!authed(req)) return send(res, 401, { error: '未登录或登录已过期' });
     const d = MEM.loadProfile(USERS, chatM[1]);
     return send(res, 200, { uid: chatM[1], firstSeen: d.firstSeen || '', lastSeen: d.lastSeen || '', visits: d.visits || 0, messages: MEM.readChat(USERS, chatM[1]) });
+  }
+  // ---- 知识库：后台只读查看 + 命令行写入 ----
+  if (url === '/api/admin/kb' && req.method === 'GET') {
+    if (!authed(req)) return send(res, 401, { error: '未登录或登录已过期' });
+    return send(res, 200, { stats: KB.stats(), docs: KB.list(), quarantine: KB.quarantined().length });
+  }
+  if (url === '/api/admin/kb/search' && req.method === 'GET') {
+    if (!authed(req)) return send(res, 401, { error: '未登录或登录已过期' });
+    const q = new URL(req.url, 'http://x').searchParams;
+    const query = String(q.get('q') || '').slice(0, 200);
+    const k = Math.max(1, Math.min(20, parseInt(q.get('k'), 10) || 6));
+    if (!query.trim()) return send(res, 400, { error: '请给出 q' });
+    const t0 = Date.now();
+    return send(res, 200, { query, ms: Date.now() - t0, hits: KB.search(query, k) });
+  }
+  if (url === '/api/admin/kb/quarantine' && req.method === 'GET') {
+    if (!authed(req)) return send(res, 401, { error: '未登录或登录已过期' });
+    return send(res, 200, { list: KB.quarantined().slice(-100) });
+  }
+  if (url === '/api/kb/ingest' && req.method === 'POST') {
+    if (!authed(req)) return send(res, 401, { error: '未登录或登录已过期' });
+    let o;
+    try { o = JSON.parse(await readBody(req, 9 * 1024 * 1024)); } catch (e) { return send(res, 400, { error: '内容太大或不是合法 JSON' }); }
+    const items = Array.isArray(o && o.items) ? o.items : [o];
+    if (items.length > 2000) return send(res, 413, { error: '单次最多 2000 篇，请分批' });
+    let results;
+    try { results = KB.addMany(items); } catch (e) { return send(res, 500, { error: '入库失败：' + e.message }); }
+    return send(res, results.some(x => x.ok) ? 200 : 422, { results });
+  }
+  const kbDel = url.match(/^\/api\/kb\/doc\/([a-z0-9一-龥-]{1,64})$/);
+  if (kbDel && req.method === 'DELETE') {
+    if (!authed(req)) return send(res, 401, { error: '未登录或登录已过期' });
+    return send(res, 200, KB.remove(kbDel[1]));
+  }
+  if (url === '/api/kb/compact' && req.method === 'POST') {
+    if (!authed(req)) return send(res, 401, { error: '未登录或登录已过期' });
+    return send(res, 200, { ok: true, stats: KB.compact() });
   }
   // ---- 评论：访客提交先进待审，审核通过才对外显示 ----
   const CF = path.join(ROOT, 'data', 'comments.json');
@@ -433,6 +488,7 @@ http.createServer(async (req, res) => {
     if (url.startsWith('/api/')) return await api(req, res, url);
     if (url === '/') url = '/index.html';
     if (url === '/admin') url = '/admin.html';
+    if (url === '/admin/kb') url = '/kb.html';
     if (url === '/posts') { res.writeHead(301, { Location: '/blog' }); return res.end(); }
     if (url === '/blog') url = '/blog.html';
     if (url === '/courses') url = '/courses.html';
@@ -448,3 +504,13 @@ http.createServer(async (req, res) => {
     send(res, 500, { error: '服务器出错' });
   }
 }).listen(PORT, () => console.log('http://localhost:' + PORT));
+
+// 知识库空的时候，用网站已公开的内容自动灌一次种子；已有内容就跳过，不覆盖命令行写入的东西
+setImmediate(() => {
+  try {
+    if (KB.stats().docs > 0) return;
+    const docs = require('./lib/kb/seed').fromSite(ROOT);
+    let n = 0; for (const d of docs) { const r = KB.add(d); if (r.ok) n++; }
+    console.log('[kb] 空库初始化：灌入 ' + n + ' 篇网站内容');
+  } catch (e) { console.warn('[kb] 初始化失败：' + e.message); }
+});
