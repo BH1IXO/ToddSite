@@ -1,6 +1,7 @@
 const http = require('http'), fs = require('fs'), path = require('path'), crypto = require('crypto');
 const MEM = require('./lib/memory');
 const EXT = require('./lib/extract');
+const CHUNKER = require('./lib/chunker');
 const AUTH_LIB = require('./lib/auth');
 const KB = require('./lib/kb').open(process.env.KB_DIR || path.join(__dirname, 'data', 'kb'));
 const PORT = process.env.PORT || 3000;
@@ -83,6 +84,10 @@ function persona(ud, kbBlock) {
   const cg = d.courses ? (Array.isArray(d.courses.groups) ? d.courses.groups : [d.courses]) : []; // 兼容旧的单课程结构
   const course = cg.length ? '\n' + cg.map(g => '- ' + g.title + (g.status === 'wip' ? '（筹备中，还没开课）' : '') + ((g.lessons || []).length ? '：' + g.lessons.map(l => '第' + l.no + '讲 ' + l.title).join('；') : '')).join('\n') : '';
   const offers = (d.offers || []).map(o => '- ' + o.title + '：' + o.desc + (o.price ? '（' + o.price + '）' : '')).join('\n');
+  // 身份要点（现任职务等）每次都带上，不靠检索碰运气："你在哪工作"这类问法的字面词和这段资料对不上，检索常常捞不到它
+  const idFacts = (d.facts || []).filter(f => f && f.v).map(f => '- ' + (f.k ? f.k + '：' : '') + f.v).join('\n');
+  // 课程名、工作方向名容易被模型当成职位（比如把 FDE 说成"我是 FDE"），列出来明确告诉它这些不是职位
+  const labels = cg.map(g => g.title).concat((d.workAreas || []).map(a => a.title)).filter(Boolean);
   let posts = '';
   try {
     const dir = path.join(ROOT, 'data', 'posts');
@@ -106,6 +111,9 @@ function persona(ud, kbBlock) {
     '- 不编造经历、数据、客户、价格。不透露私人信息（住址、证件、银行卡、家人）。不替自己做商务承诺或报价，有合作意向就引导对方留联系方式。\n' +
     '- 对方问你是不是 AI，如实说这是你的数字分身。\n' +
     '- 下面「资料」是从我的知识库里按对方这个问题检索出来的，可能不完整。优先据实回答，资料没提到的细节不要编。\n' +
+    (idFacts ? '- 对方问我在哪工作、什么职位、负责什么：以【我的身份】为准，先照「现任」那条原文说清单位和职位，再用一两句说手上负责的业务（从简介和工作方向里取，别编）。\n' : '') +
+    (labels.length ? '- 课程名和工作方向名不是职位：' + labels.map(x => '「' + x + '」').join('') + '。' + (cg.some(g => /FDE/i.test(g.title || '')) ? 'FDE 是我开的一门课（也是我进客户现场做 AI 改造的工作方式），不是我的职位，不要说"我是 FDE""我在世纪互联做 FDE"。' : '别把它们说成我的头衔。') + '\n' : '') +
+    (idFacts ? '\n【我的身份】\n' + idFacts + '\n' : '') +
     (facts ? '\n【关于对方，你记得的】\n' + facts + '\n' : '') +
     (rel.length ? '\n【你们的关系】\n' + rel.join('') + '别每次都重新自我介绍，就当熟人。\n' : '') +
     '\n【我的简介】' + (p.headline || '') + ' ' + (p.intro || '') + '\n' +
@@ -202,18 +210,12 @@ async function api(req, res, url) {
       ...(issued ? { 'Set-Cookie': 'tid=' + uid + '; Path=/; Max-Age=31536000; SameSite=Lax' } : {}),
     });
     res.write('data: ' + JSON.stringify({ uid, ...(issued ? { first: true } : {}) }) + '\n\n');
-    const dec = new TextDecoder(); let buf = '', reply = '', pending = '';
-    // 流式输出留 160 字尾巴再发：电话、邮箱这类跨分片的片段不会被切开发出去，出口再过一遍脱敏
-    const LAG = 160;
-    const flush = final => {
-      const cut = final ? pending.length : pending.length - LAG;
-      if (cut <= 0) return;
-      const out = KB.redact(pending.slice(0, cut));
-      pending = pending.slice(cut);
-      if (!out) return;
-      reply += out;
-      res.write('data: ' + JSON.stringify({ content: out }) + '\n\n');
-    };
+    const dec = new TextDecoder(); let buf = '', reply = '';
+    // 上游按 token 吐字，攒成整句/整短语再发（切点只落在标点上，不劈开单词和联系方式），每块出口再过一遍脱敏
+    const chunks = CHUNKER.create({
+      redact: KB.redact,
+      emit: out => { reply += out; res.write('data: ' + JSON.stringify({ content: out }) + '\n\n'); },
+    });
     try {
       for await (const chunk of up.body) {
         buf += dec.decode(chunk, { stream: true });
@@ -225,12 +227,12 @@ async function api(req, res, url) {
           if (data === '[DONE]') continue;
           try {
             const t = JSON.parse(data).choices[0].delta.content;
-            if (t) { pending += t; flush(false); }
+            if (t) chunks.push(t);
           } catch (e) {}
         }
       }
     } catch (e) {}
-    flush(true);
+    chunks.end();
     res.write('data: [DONE]\n\n'); res.end();
 
     // ---- 收尾：记回复、提炼事实（异步，不阻塞用户）----

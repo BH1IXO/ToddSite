@@ -14,13 +14,15 @@ jobs:
         with:
           node-version: 20
       - name: Syntax check
-        run: node --check server.js && node --check lib/auth.js && node --check scripts/kb.js && for f in lib/kb/*.js; do node --check "$f"; done
+        run: node --check server.js && node --check lib/auth.js && node --check scripts/kb.js && node --check lib/chunker.js && for f in lib/kb/*.js; do node --check "$f"; done
       - name: Login protection tests
         run: |
           node test/auth.test.js
           node test/login.e2e.js
       - name: Knowledge base tests
         run: node test/kb.test.js
+      - name: Chat stream chunking tests
+        run: node test/chunker.test.js
       - name: Validate content JSON
         run: |
           node -e "const fs=require('fs');const s=JSON.parse(fs.readFileSync('data/site.json','utf8'));if(!s.profile||!s.profile.headline||!Array.isArray(s.projects))throw new Error('site.json invalid');for(const f of fs.readdirSync('data/posts')){if(f.endsWith('.json'))JSON.parse(fs.readFileSync('data/posts/'+f,'utf8'))}console.log('content ok')"
