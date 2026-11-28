@@ -186,16 +186,21 @@ select{min-height:44px}
     $('login-view').hidden=true;$('editor-view').hidden=false;
     api('GET','/api/site').then(function(d){data=d;fillForm(d);}).catch(function(e){say('save-msg',e.message,'err')});
   }
+  var expTimer=0;
+  function forget(){try{sessionStorage.removeItem('admin-token');sessionStorage.removeItem('admin-exp')}catch(e){}token='';clearTimeout(expTimer)}
+  function expired(){forget();$('editor-view').hidden=true;$('login-view').hidden=false;say('login-msg','登录已过期，请重新登录','err')}
+  function armExpiry(exp){clearTimeout(expTimer);var ms=exp-Date.now();if(ms>0&&ms<2147483647)expTimer=setTimeout(expired,ms)}
   function login(){
     say('login-msg','登录中…');
     api('POST','/api/login',{password:$('pw').value}).then(function(j){
-      token=j.token;try{sessionStorage.setItem('admin-token',token)}catch(e){}
-      $('pw').value='';say('login-msg','');showEditor();
+      token=j.token;var exp=j.expiresAt||(Date.now()+(j.expiresIn||0)*1000);
+      try{sessionStorage.setItem('admin-token',token);sessionStorage.setItem('admin-exp',String(exp))}catch(e){}
+      armExpiry(exp);$('pw').value='';say('login-msg','');showEditor();
     }).catch(function(e){say('login-msg',e.message,'err')});
   }
   $('login-btn').addEventListener('click',login);
   $('pw').addEventListener('keydown',function(e){if(e.key==='Enter')login()});
-  try{var t=sessionStorage.getItem('admin-token');if(t){token=t;showEditor()}}catch(e){}
+  try{var t=sessionStorage.getItem('admin-token'),x=+sessionStorage.getItem('admin-exp')||0;if(t&&x>Date.now()){token=t;armExpiry(x);showEditor()}else if(t)forget()}catch(e){}
   function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
   function factRow(f){f=f||{};return '<div class="row facts-row"><div><label>KEY</label><input data-f="k" value="'+esc(f.k)+'"></div><div><label>VALUE</label><input data-f="v" value="'+esc(f.v)+'"></div><button type="button" class="danger" data-del>删除</button></div>'}
   function offerRow(o){o=o||{};return '<div class="row"><label>TITLE</label><input data-f="title" value="'+esc(o.title)+'"><label>DESC</label><textarea data-f="desc">'+esc(o.desc)+'</textarea><label>PRICE（可留空，如 ¥299 起）</label><input data-f="price" value="'+esc(o.price)+'"><div class="acts"><span></span><button type="button" class="danger" data-del>删除</button></div></div>'}
@@ -330,14 +335,14 @@ select{min-height:44px}
     if(!data){say('save-msg','数据还没加载完，请稍后再保存','err');return}
     var out=mergeSaved(data,collect());
     api('PUT','/api/site',out).then(function(){data=out;say('save-msg','已保存，前台刷新即可看到。','ok')}).catch(function(e){
-      if(e.status===401){try{sessionStorage.removeItem('admin-token')}catch(x){}token='';$('editor-view').hidden=true;$('login-view').hidden=false;say('login-msg','登录已过期，请重新登录','err')}
+      if(e.status===401)expired();
       else say('save-msg',e.message,'err');
     });
   });
   $('logout-btn').addEventListener('click',function(){
     api('POST','/api/logout').catch(function(){}).then(function(){
-      try{sessionStorage.removeItem('admin-token')}catch(e){}
-      token='';$('editor-view').hidden=true;$('login-view').hidden=false;say('login-msg','已退出');
+      forget();
+      $('editor-view').hidden=true;$('login-view').hidden=false;say('login-msg','已退出');
     });
   });
 })();

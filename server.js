@@ -1,19 +1,28 @@
 const http = require('http'), fs = require('fs'), path = require('path'), crypto = require('crypto');
 const MEM = require('./lib/memory');
 const EXT = require('./lib/extract');
+const AUTH_LIB = require('./lib/auth');
 const PORT = process.env.PORT || 3000;
-const PASS = process.env.ADMIN_PASSWORD;
+const PASS = process.env.ADMIN_PASSWORD; // 后台密码只从环境变量读，代码里不放任何默认值
 if (!PASS) { console.error('请先设置环境变量 ADMIN_PASSWORD'); process.exit(1); }
+if (PASS.length < 12) console.warn('[auth] 警告：ADMIN_PASSWORD 少于 12 位，建议换成更长的随机密码');
 const ROOT = __dirname, PUB = path.join(ROOT, 'public');
 const DATA = path.join(ROOT, 'data', 'site.json');
 const USERS = MEM.ensureDir(path.join(ROOT, 'data', 'users'));
-const sessions = new Map(), fails = new Map();
+const envNum = (k, d) => { const n = Number(process.env[k]); return Number.isFinite(n) && n > 0 ? n : d; };
+const AUTH = AUTH_LIB.create({
+  password: PASS,
+  maxFails: envNum('LOGIN_MAX_FAILS', 5),
+  windowMs: envNum('LOGIN_WINDOW_MINUTES', 15) * 60e3,
+  lockMs: envNum('LOGIN_LOCK_MINUTES', 15) * 60e3,
+  sessionTtlMs: envNum('SESSION_TTL_HOURS', 12) * 3600e3,
+  logFile: process.env.LOGIN_LOG_FILE || path.join(ROOT, 'data', 'logs', 'admin-login.log'),
+});
+setInterval(AUTH.prune, 10 * 60e3).unref();
 const MIME = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp', '.ico': 'image/x-icon' };
 
-function sha(s) { return crypto.createHash('sha256').update(String(s)).digest(); }
-function same(a, b) { return crypto.timingSafeEqual(sha(a), sha(b)); }
-function send(res, code, body, type) {
-  res.writeHead(code, { 'Content-Type': type || 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
+function send(res, code, body, type, extra) {
+  res.writeHead(code, Object.assign({ 'Content-Type': type || 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }, extra));
   res.end(typeof body === 'string' || Buffer.isBuffer(body) ? body : JSON.stringify(body));
 }
 function readBody(req, limit) {
@@ -24,17 +33,7 @@ function readBody(req, limit) {
     req.on('error', no);
   });
 }
-function authed(req) {
-  const t = req.headers['x-token'];
-  const exp = t && sessions.get(t);
-  if (!exp) return false;
-  if (exp < Date.now()) { sessions.delete(t); return false; }
-  return true;
-}
-function blocked(ip) {
-  const f = fails.get(ip);
-  return f && f.n >= 5 && Date.now() - f.t < 15 * 60 * 1000;
-}
+function authed(req) { return AUTH.check(req.headers['x-token']); }
 
 
 const DS_KEY = process.env.DEEPSEEK_API_KEY || '';
@@ -42,8 +41,25 @@ const DS_URL = process.env.DEEPSEEK_API_URL || 'https://api.deepseek.com/chat/co
 const DS_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-chat';
 const chatHits = new Map(), commentHits = new Map();
 let siteDay = { d: '', n: 0 };
+// 反向代理后面：可信代理把来源 IP 追加在 x-forwarded-for 末尾，取倒数第 N 段（N=TRUST_PROXY 的数值，默认 1）。
+// 不取第一段：那是客户端自己带的，可以随意伪造来绕过登录锁定和限流。
+// TRUST_PROXY 不设、为 0 或 false 时不信任该头。
+const TP = String(process.env.TRUST_PROXY || '').trim();
+const PROXY_HOPS = !TP || TP === '0' || TP.toLowerCase() === 'false' ? 0 : (parseInt(TP, 10) > 0 ? parseInt(TP, 10) : 1);
+const normIp = s => String(s || '').trim().replace(/^::ffff:/, '').slice(0, 64);
+let warnedProxy = false;
 function clientIp(req) {
-  return (process.env.TRUST_PROXY && String(req.headers['x-forwarded-for'] || '').split(',')[0].trim()) || req.socket.remoteAddress;
+  const sock = normIp(req.socket.remoteAddress);
+  const xff = String(req.headers['x-forwarded-for'] || '');
+  if (!PROXY_HOPS) {
+    if (xff && !warnedProxy && /^(127\.|::1$)/.test(sock)) { // 本机 nginx 转发过来却没开 TRUST_PROXY：所有人都是 127.0.0.1，一个人输错就锁住所有人
+      warnedProxy = true;
+      console.warn('[auth] 请求经本机反代转发（带 X-Forwarded-For）但没设置 TRUST_PROXY，所有访客 IP 都会记成 ' + sock + '，登录锁定会波及所有人。请设置 TRUST_PROXY=1');
+    }
+    return sock;
+  }
+  const parts = xff.split(',').map(s => s.trim()).filter(Boolean);
+  return parts.length >= PROXY_HOPS ? normIp(parts[parts.length - PROXY_HOPS]) : sock;
 }
 function chatLimit(ip) {
   const now = Date.now(), day = new Date().toISOString().slice(0, 10);
@@ -324,22 +340,16 @@ async function api(req, res, url) {
     return send(res, 200, fs.readFileSync(DATA, 'utf-8'));
   }
   if (url === '/api/login' && req.method === 'POST') {
-    const ip = (process.env.TRUST_PROXY && String(req.headers['x-forwarded-for'] || '').split(',')[0].trim()) || req.socket.remoteAddress;
-    if (blocked(ip)) return send(res, 429, { error: '尝试次数过多，请 15 分钟后再试' });
+    const ip = clientIp(req), ua = req.headers['user-agent'] || '';
     let pw = '';
-    try { pw = JSON.parse(await readBody(req, 2000)).password || ''; } catch (e) {}
-    if (!same(pw, PASS)) {
-      const f = fails.get(ip) || { n: 0, t: 0 };
-      fails.set(ip, { n: f.n + 1, t: Date.now() });
-      return send(res, 401, { error: '密码不对' });
-    }
-    fails.delete(ip);
-    const token = crypto.randomBytes(24).toString('hex');
-    sessions.set(token, Date.now() + 12 * 3600 * 1000);
-    return send(res, 200, { token });
+    try { const b = JSON.parse(await readBody(req, 2000)); pw = b && typeof b.password === 'string' ? b.password : ''; } catch (e) {} // 格式不对也按一次失败记
+    const r = AUTH.login(pw, ip, ua); // 锁定判断、失败计数、写日志、签发带有效期的 token 都在 lib/auth.js 里
+    if (r.ok) return send(res, 200, { token: r.token, expiresAt: r.expiresAt, expiresIn: Math.floor((r.expiresAt - Date.now()) / 1000) });
+    if (r.locked) return send(res, 429, { error: '尝试次数过多，该 IP 已被临时锁定，请 ' + Math.ceil(r.retryAfterSec / 60) + ' 分钟后再试' }, null, { 'Retry-After': String(r.retryAfterSec) });
+    return send(res, 401, { error: '密码不对' + (r.remaining <= 2 ? '，再错 ' + r.remaining + ' 次将临时锁定' : '') });
   }
   if (url === '/api/logout' && req.method === 'POST') {
-    sessions.delete(req.headers['x-token']);
+    AUTH.logout(req.headers['x-token'], clientIp(req), req.headers['user-agent'] || '');
     return send(res, 200, { ok: true });
   }
   if (url === '/api/site' && req.method === 'PUT') {

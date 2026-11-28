@@ -14,13 +14,18 @@ jobs:
         with:
           node-version: 20
       - name: Syntax check
-        run: node --check server.js
+        run: node --check server.js && node --check lib/auth.js
+      - name: Login protection tests
+        run: |
+          node test/auth.test.js
+          node test/login.e2e.js
       - name: Validate content JSON
         run: |
           node -e "const fs=require('fs');const s=JSON.parse(fs.readFileSync('data/site.json','utf8'));if(!s.profile||!s.profile.headline||!Array.isArray(s.projects))throw new Error('site.json invalid');for(const f of fs.readdirSync('data/posts')){if(f.endsWith('.json'))JSON.parse(fs.readFileSync('data/posts/'+f,'utf8'))}console.log('content ok')"
       - name: Start server and smoke test
         run: |
-          ADMIN_PASSWORD=ci-smoke PORT=3999 node server.js &
+          # 每次随机生成测试用密码，仓库里不放任何固定密码
+          ADMIN_PASSWORD="$(openssl rand -hex 16)" PORT=3999 node server.js &
           sleep 2
           curl -fsS http://localhost:3999/ -o /dev/null
           curl -fsS http://localhost:3999/admin -o /dev/null
