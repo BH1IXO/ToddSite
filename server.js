@@ -492,6 +492,8 @@ http.createServer(async (req, res) => {
     if (url === '/posts') { res.writeHead(301, { Location: '/blog' }); return res.end(); }
     if (url === '/blog') url = '/blog.html';
     if (url === '/courses') url = '/courses.html';
+    if (url === '/compute') url = '/compute.html';
+    if (url === '/inference') url = '/inference.html';
     if (url === '/k12') url = '/k12.html';
     if (url === '/chat') url = '/chat.html';
     if (/^\/post\/[a-z0-9-]+$/.test(url)) url = '/post.html';
