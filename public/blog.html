@@ -27,6 +27,14 @@ h1{font-size:clamp(2.2rem,5vw,3.2rem);letter-spacing:-.04em;margin:10px 0 0;font
 .date{font-family:var(--mono);font-size:13.5px;color:var(--mute)}
 .posts h3{margin:0;font-size:20px;font-weight:600;line-height:1.5}
 .posts p{margin:6px 0 0;font-size:15.5px;color:var(--mute);line-height:1.75}
+/* 分类标签：样式沿用首页原 .ptag；原创=反色描边，论文=蓝，资讯=琥珀；放在标题上方单独一行 */
+.posts .ptag{display:inline-block;font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.06em;line-height:1;padding:3px 7px;margin:0 0 8px;border:1px solid var(--line);border-radius:3px;color:var(--mute);background:var(--soft)}
+.posts .ptag.paper{color:#1D4ED8;border-color:rgba(29,78,216,.35);background:rgba(29,78,216,.08)}
+.posts .ptag.news{color:#B45309;border-color:rgba(180,83,9,.35);background:rgba(180,83,9,.08)}
+.posts .ptag.original{color:var(--fg);border-color:var(--fg);background:transparent}
+@media (prefers-color-scheme:dark){:root:not([data-theme='light']) .posts .ptag.paper{color:#93B4FF;border-color:rgba(147,180,255,.4);background:rgba(147,180,255,.1)}:root:not([data-theme='light']) .posts .ptag.news{color:#FBBF77;border-color:rgba(251,191,119,.4);background:rgba(251,191,119,.1)}}
+:root[data-theme='dark'] .posts .ptag.paper{color:#93B4FF;border-color:rgba(147,180,255,.4);background:rgba(147,180,255,.1)}
+:root[data-theme='dark'] .posts .ptag.news{color:#FBBF77;border-color:rgba(251,191,119,.4);background:rgba(251,191,119,.1)}
 @media (max-width:700px){.posts a{grid-template-columns:1fr;gap:4px}}
 /* 标签栏：胶囊按钮，选中态反色；窄屏横向滚动不换行 */
 .tags{display:flex;gap:8px;margin:20px 0 0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
@@ -93,7 +101,7 @@ h1{line-height:1.25}
     fetch('/api/posts'+(cur==='all'?'':'?tag='+cur),{cache:'no-store'}).then(function(r){return r.json()}).then(function(l){
       if(my!==seq)return;
       cnt.textContent=l.length?('共 '+l.length+' 篇，按时间倒序。'):(cur==='all'?'博客整理中，很快更新。':'这个分类下暂时还没有文章。');
-      list.innerHTML=l.map(function(a){return '<li><a href="/post/'+encodeURIComponent(a.id)+'"><span class="date">'+esc(a.date||'')+'</span><div><h3>'+esc(a.title)+'</h3>'+(a.summary?'<p>'+esc(a.summary)+'</p>':'')+'</div><span class="date">→</span></a></li>'}).join('');
+      list.innerHTML=l.map(function(a){return '<li><a href="/post/'+encodeURIComponent(a.id)+'"><span class="date">'+esc(a.date||'')+'</span><div><span class="ptag '+(a.tag==='paper'||a.tag==='news'?a.tag:'original')+'">'+({paper:'论文',news:'资讯'}[a.tag]||'原创')+'</span><h3>'+esc(a.title)+'</h3>'+(a.summary?'<p>'+esc(a.summary)+'</p>':'')+'</div><span class="date">→</span></a></li>'}).join('');
     }).catch(function(){if(my===seq)cnt.textContent='加载失败，请刷新重试。'});
   }
   bar.addEventListener('click',function(e){var b=e.target.closest('button[data-t]');if(b)location.hash=b.getAttribute('data-t')});

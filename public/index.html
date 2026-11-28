@@ -89,23 +89,6 @@ h2{font-size:26px;line-height:1.4;letter-spacing:-.045em;margin:12px 0 0;font-we
 .card ul li::before{content:'·';position:absolute;left:0}
 .card>p{margin:10px 0 0;padding:0 18px;font-size:13px;line-height:1.8;color:var(--mute);flex:1}
 .card .foot{margin-top:18px;border-top:1px solid var(--line);padding:12px 18px;font-family:var(--mono);font-size:12px;display:flex;justify-content:space-between;gap:12px}
-/* 文章 */
-.posts{border-top:1px solid var(--line);margin:0;padding:0;list-style:none}
-.posts li{border-bottom:1px solid var(--line)}
-.posts a,.posts .row{display:grid;grid-template-columns:110px minmax(0,1fr) auto;gap:24px;align-items:baseline;padding:18px 0;text-decoration:none}
-.posts a:hover h3{text-decoration:underline;text-underline-offset:4px}
-.posts .date{font-family:var(--mono);font-size:11.5px;color:var(--mute)}
-.posts h3{margin:0;font-size:17px;font-weight:500;letter-spacing:-.02em;line-height:1.5}
-.posts p{margin:4px 0 0;font-size:13px;line-height:1.7;color:var(--mute)}
-.posts .arrow{font-size:14px;color:var(--mute)}
-.posts .ptag{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.06em;line-height:1;padding:3px 7px;margin-right:10px;border:1px solid var(--line);border-radius:3px;vertical-align:2px;color:var(--mute);background:var(--soft)}
-.posts .ptag.paper{color:#1D4ED8;border-color:rgba(29,78,216,.35);background:rgba(29,78,216,.08)}
-.posts .ptag.news{color:#B45309;border-color:rgba(180,83,9,.35);background:rgba(180,83,9,.08)}
-.posts .ptag.original{color:var(--fg);border-color:var(--fg);background:transparent}
-@media (prefers-color-scheme:dark){:root:not([data-theme='light']) .posts .ptag.paper{color:#93B4FF;border-color:rgba(147,180,255,.4);background:rgba(147,180,255,.1)}:root:not([data-theme='light']) .posts .ptag.news{color:#FBBF77;border-color:rgba(251,191,119,.4);background:rgba(251,191,119,.1)}}
-:root[data-theme='dark'] .posts .ptag.paper{color:#93B4FF;border-color:rgba(147,180,255,.4);background:rgba(147,180,255,.1)}
-:root[data-theme='dark'] .posts .ptag.news{color:#FBBF77;border-color:rgba(251,191,119,.4);background:rgba(251,191,119,.1)}
-.head .lead a{text-underline-offset:3px;white-space:nowrap}
 /* 生活 */
 .life{min-height:180px}
 .life .idx{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--mute);text-transform:uppercase}
@@ -132,7 +115,7 @@ h2{font-size:26px;line-height:1.4;letter-spacing:-.045em;margin:12px 0 0;font-we
 .contact-list a{text-underline-offset:3px}
 footer{border-top:1px solid var(--line);padding-top:22px;padding-bottom:40px;font-family:var(--mono);font-size:11.5px;color:var(--mute);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 footer a{text-underline-offset:3px}
-@media (max-width:860px){.hero{grid-template-columns:1fr}.portrait{max-width:200px}.grid2,.grid3{grid-template-columns:1fr}.posts a,.posts .row{grid-template-columns:1fr;gap:4px}}
+@media (max-width:860px){.hero{grid-template-columns:1fr}.portrait{max-width:200px}.grid2,.grid3{grid-template-columns:1fr}}
 @media (max-width:760px){nav{display:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 body{font-size:17px}nav{font-size:15.5px}.lead{font-size:1.1rem}.head .lead{font-size:15px}.btn{font-size:15px;padding:10px 22px}.facts .v{font-size:16px}.mini b{font-size:15.5px}.mini p{font-size:14px}.dir-l p{font-size:15.5px}.dir h3{font-size:22px}.dir .tag,.kicker,.facts .k,.card .idx,.life .idx{font-size:12.5px}.card h3{font-size:19px}.card>p{font-size:15px}.contact-list .v{font-size:17px}.dir-r .empty{font-size:14.5px}.hero-meta{font-size:14px}.chips li{font-size:12px}
@@ -183,7 +166,6 @@ footer a{display:inline-block;padding:12px 0;margin:-12px 0}
 <main id='top' class='frame'>
 <section class='sec pad' id='about'><div id='hero'></div></section>
 <section class='sec pad' id='work'><div id='areas'></div></section>
-<section class='sec pad' id='posts'><div id='posts-box'></div></section>
 <section class='sec pad' id='life'><div id='life-box'></div></section>
 <section class='sec pad' id='services'><div id='offers'></div></section>
 <section class='sec pad' id='contact'><div id='contact-box'></div></section>
@@ -264,19 +246,6 @@ footer a{display:inline-block;padding:12px 0;margin:-12px 0}
     $('foot').textContent='© '+new Date().getFullYear()+' '+((d.profile&&d.profile.name)||'');
   }
 
-  var TAGN={original:'原创',paper:'论文',news:'资讯'};
-  function ts(a){var t=Date.parse(a.createdAt||'');return isNaN(t)?0:t}
-  function renderPosts(l){
-    var box=$('posts-box');
-    if(!l.length){box.innerHTML='';return}
-    l=l.slice().sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''))||ts(b)-ts(a)||String(b.id).localeCompare(String(a.id))});
-    var rows=l.slice(0,8).map(function(a){
-      var t=TAGN[a.tag]?a.tag:'original';
-      return "<li><a href='/post/"+encodeURIComponent(a.id)+"'><span class=date>"+esc(a.date||'')+"</span><div><h3><span class='ptag "+t+"'>"+TAGN[t]+"</span>"+esc(a.title)+"</h3>"+(a.summary?"<p>"+esc(a.summary)+"</p>":"")+"</div><span class=arrow>→</span></a></li>";
-    }).join('');
-    box.innerHTML="<div class=head><div><p class=kicker>Writing</p><h2>最新文章</h2></div><p class=lead>原创、论文、资讯，每天更新，共 "+l.length+" 篇。<a href='/blog'>全部文章 →</a></p></div><ul class=posts>"+rows+"</ul>";
-  }
-  fetch('/api/posts',{cache:'no-store'}).then(function(r){return r.json()}).then(function(l){renderPosts(Array.isArray(l)?l:[])}).catch(function(){$('posts-box').innerHTML=''});
   fetch('/api/site',{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){
     renderHero(d);renderAreas(d);renderLife(d);renderOffers(d);renderContact(d);
   }).catch(function(){$('hero').innerHTML='<h1>页面内容加载失败</h1><p class="lead">请刷新重试。</p>'});
