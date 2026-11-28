@@ -364,7 +364,7 @@ async function api(req, res, url) {
   const listPosts = () => { // 读取全部文章（含草稿），列表和标签计数共用
     fs.mkdirSync(POSTS, { recursive: true });
     return fs.readdirSync(POSTS).filter(f => f.endsWith('.json')).map(f => {
-      try { const p = readPost(f.slice(0, -5)); return { id: p.id, title: p.title, date: p.date, summary: p.summary, tag: tagOf(p), published: p.published !== false }; } catch (e) { return null; }
+      try { const p = readPost(f.slice(0, -5)); return { id: p.id, title: p.title, date: p.date, summary: p.summary, tag: tagOf(p), createdAt: p.createdAt || '', published: p.published !== false }; } catch (e) { return null; }
     }).filter(Boolean);
   };
   if (url === '/api/posts' && req.method === 'GET') {
