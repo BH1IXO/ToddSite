@@ -33,17 +33,22 @@ h2{font-size:26px;line-height:1.4;letter-spacing:-.045em;margin:12px 0 0;font-we
 .lead{color:var(--mute);margin:16px 0 0;max-width:34em}
 .head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;margin-bottom:26px}
 .head .lead{margin:0;max-width:26em;font-size:13px}
-.hero{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:48px;align-items:center;padding-top:24px}
+/* 首屏：头像 72px 放在名字和标题左侧，单栏，压缩上下留白 */
+section#about{padding-top:22px;padding-bottom:24px}
+.hero-id{display:flex;align-items:center;gap:18px}
+.hero-id>div{min-width:0}
+.hero h1{font-size:clamp(1.8rem,3.6vw,2.6rem);margin-top:4px}
+.hero .lead{margin-top:12px;max-width:52em}
 .hero-meta{font-family:var(--mono);font-size:12px;color:var(--mute);margin:0}
-.hero-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+.hero-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
 .btn{display:inline-flex;align-items:center;font-size:13px;font-weight:500;text-decoration:none;border:1px solid var(--fg);border-radius:4px;padding:8px 18px;transition:background .25s var(--ease),color .25s var(--ease)}
 .btn.solid{background:var(--fg);color:var(--bg)}
 .btn:hover{background:var(--fg);color:var(--bg)}
 .btn.solid:hover{background:transparent;color:var(--fg)}
-.portrait{width:100%;aspect-ratio:1;border:1px solid var(--line);border-radius:4px;background:var(--soft);display:grid;place-items:center;overflow:hidden;font-size:96px;font-weight:600;letter-spacing:-.04em;color:var(--mute)}
-.portrait img{width:100%;height:100%;object-fit:cover}
-.facts{margin:36px 0 0;padding:0;list-style:none;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
-.facts li{padding:14px 16px 14px 0;border-bottom:1px solid var(--line);min-width:0}
+.portrait{flex:none;width:72px;height:72px;border:1px solid var(--line);border-radius:50%;background:var(--soft);display:grid;place-items:center;overflow:hidden;font-size:30px;font-weight:600;letter-spacing:-.04em;color:var(--mute)}
+.portrait img{width:100%;height:100%;object-fit:cover;display:block}
+.facts{margin:20px 0 0;padding:0;list-style:none;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.facts li{padding:9px 16px 9px 0;border-bottom:1px solid var(--line);min-width:0;line-height:1.6}
 .facts .k{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--mute)}
 .facts .v{font-size:14px}
 .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
@@ -66,6 +71,18 @@ h2{font-size:26px;line-height:1.4;letter-spacing:-.045em;margin:12px 0 0;font-we
 .chips li{font-family:var(--mono);font-size:10.5px;color:var(--mute);border:1px solid var(--line);border-radius:3px;padding:1px 7px}
 .dir-r{min-width:0}
 .dir-r .empty{margin:0;font-size:13px;color:var(--mute);border:1px dashed var(--line);border-radius:4px;padding:14px 16px}
+/* 推理优化：最近 3 天论文/资讯标题滚动 */
+.mini li.feed{grid-column:1/-1}
+.feed .tk{position:relative;height:196px;overflow:hidden;margin-top:8px;-webkit-mask-image:linear-gradient(transparent,#000 14%,#000 86%,transparent);mask-image:linear-gradient(transparent,#000 14%,#000 86%,transparent)}
+.feed .tk ul{margin:0;padding:0;list-style:none}
+.feed .tk.run ul{animation:tk-up var(--tk-dur,60s) linear infinite}
+.feed .tk.run:hover ul{animation-play-state:paused}
+.feed .tk li{display:flex;align-items:baseline;gap:8px;border:0;background:none;padding:0;height:28px;line-height:28px;font-size:13.5px;transition:none}
+.feed .tk li:hover{border:0}
+.feed .tk .k{flex:none;font-family:var(--mono);font-size:11px;color:var(--mute)}
+.feed .tk .t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@keyframes tk-up{to{transform:translateY(-50%)}}
+@media (prefers-reduced-motion:reduce){.feed .tk{overflow-y:auto}.feed .tk.run ul{animation:none}}
 @media (max-width:860px){.dir{grid-template-columns:1fr;gap:18px}}
 .proj{display:flex;flex-direction:column;min-width:0;text-decoration:none}
 .proj .vis{position:relative;aspect-ratio:1.8;border:1px solid var(--line);border-radius:4px;background:var(--soft);overflow:hidden;display:flex;align-items:center;justify-content:center}
@@ -115,7 +132,7 @@ h2{font-size:26px;line-height:1.4;letter-spacing:-.045em;margin:12px 0 0;font-we
 .contact-list a{text-underline-offset:3px}
 footer{border-top:1px solid var(--line);padding-top:22px;padding-bottom:40px;font-family:var(--mono);font-size:11.5px;color:var(--mute);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 footer a{text-underline-offset:3px}
-@media (max-width:860px){.hero{grid-template-columns:1fr}.portrait{max-width:200px}.grid2,.grid3{grid-template-columns:1fr}}
+@media (max-width:860px){.grid2,.grid3{grid-template-columns:1fr}}
 @media (max-width:760px){nav{display:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 body{font-size:17px}nav{font-size:15.5px}.lead{font-size:1.1rem}.head .lead{font-size:15px}.btn{font-size:15px;padding:10px 22px}.facts .v{font-size:16px}.mini b{font-size:15.5px}.mini p{font-size:14px}.dir-l p{font-size:15.5px}.dir h3{font-size:22px}.dir .tag,.kicker,.facts .k,.card .idx,.life .idx{font-size:12.5px}.card h3{font-size:19px}.card>p{font-size:15px}.contact-list .v{font-size:17px}.dir-r .empty{font-size:14.5px}.hero-meta{font-size:14px}.chips li{font-size:12px}
@@ -124,11 +141,11 @@ html,body{max-width:100%;overflow-x:hidden}
 @supports (overflow:clip){html,body{overflow-x:clip}}
 img,video,pre,table{max-width:100%}
 h1,h2,h3,h4,h5,h6,p{overflow-wrap:break-word;word-break:break-word}
-/* 手机：首页 hero 单栏、标题与头像方块缩小 */
+/* 手机：首页 hero 标题与头像缩小 */
 @media (max-width:768px){
-.hero{grid-template-columns:1fr;gap:24px}
-.hero h1{font-size:clamp(1.7rem,7.5vw,2.2rem)}
-.portrait{max-width:120px;font-size:56px}
+.hero-id{gap:14px}
+.hero h1{font-size:clamp(1.5rem,6.4vw,2rem)}
+.portrait{width:64px;height:64px;font-size:26px}
 }
 /* 手机：导航不撑破页面 */
 @media (max-width:480px){
@@ -145,8 +162,9 @@ header.top nav a{flex:none;white-space:nowrap;display:flex;align-items:center;mi
 .bar{gap:8px}
 .logo{display:flex;align-items:center;min-height:44px;font-size:16px;white-space:nowrap}
 section.sec{padding-top:28px;padding-bottom:32px}
-.hero{padding-top:8px}
-.portrait{order:-1;max-width:88px;font-size:40px}
+section#about{padding-top:16px;padding-bottom:22px}
+.facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+.facts li{padding-right:12px}
 .hero-actions .btn{flex:1 1 auto;justify-content:center;min-height:44px}
 .life{min-height:0}
 .card .foot a{padding:11px 0 11px 16px;margin:-11px 0}
@@ -184,9 +202,9 @@ footer a{display:inline-block;padding:12px 0;margin:-12px 0}
     var facts=(d.facts||[]).map(function(f){return '<li><span class="k">'+esc(f.k)+'</span><span class="v">'+esc(f.v)+'</span></li>'}).join('');
     var av=safeUrl(p.avatar)||((p.avatar||'').indexOf('/posts-img/uploads/')===0&&(p.avatar||'').indexOf('..')<0?p.avatar:'');
     var pic=av?'<img src="'+esc(av)+'" alt="'+esc(p.name)+'">':esc((p.name||'').slice(0,1));
-    $('hero').innerHTML='<div class="hero"><div><p class="hero-meta">'+esc(p.name)+(p.alias?' / '+esc(p.alias):'')+'</p><h1>'+esc(p.headline)+'</h1><p class="lead">'+esc(p.intro)+'</p>'
+    $('hero').innerHTML='<div class="hero"><div class="hero-id"><div class="portrait">'+pic+'</div><div><p class="hero-meta">'+esc(p.name)+(p.alias?' / '+esc(p.alias):'')+'</p><h1>'+esc(p.headline)+'</h1></div></div>'
+      +'<p class="lead">'+esc(p.intro)+'</p>'
       +'<div class="hero-actions"><a class="btn solid" href="#work">看看我在做什么</a><a class="btn" href="#contact">跟我聊聊</a></div></div>'
-      +'<div class="portrait">'+pic+'</div></div>'
       +(facts?'<ul class="facts">'+facts+'</ul>':'');
   }
 
@@ -197,6 +215,7 @@ footer a{display:inline-block;padding:12px 0;margin:-12px 0}
       var pts=(a.points||[]).map(function(x){return "<li>"+esc(x)+"</li>"}).join('');
       var its=(a.items||[]).map(function(it){
         var ext=safeUrl(it.url),loc=/^\/[^\/\\]/.test(it.url||'')?it.url:'',u=ext||loc;
+        if(loc==='/inference')return "<li class=feed><a href='/inference'><b>"+esc(it.name)+" →</b></a>"+(it.desc?"<p id=inf-desc>"+esc(it.desc)+"</p>":"")+"<div class=tk id=inf-tk hidden></div></li>";
         var inner="<b>"+esc(it.name)+(ext?" ↗":(loc?" →":""))+"</b>"+(it.desc?"<p>"+esc(it.desc)+"</p>":"");
         return "<li>"+(u?"<a href='"+esc(u)+"'"+(ext?" target='_blank' rel='noopener noreferrer'":"")+">"+inner+"</a>":"<div>"+inner+"</div>")+"</li>";
       }).join('');
@@ -247,8 +266,37 @@ footer a{display:inline-block;padding:12px 0;margin:-12px 0}
     $('foot').textContent='© '+new Date().getFullYear()+' '+((d.profile&&d.profile.name)||'');
   }
 
+  // 推理优化卡片：论文、资讯各取自己最新日期往前 3 天（含当天），合并去重后只滚动标题
+  function recentRows(list,kind){
+    var ok=(list||[]).filter(function(x){return x&&x.title&&/^\d{4}-\d{2}-\d{2}$/.test(x.date||'')});
+    if(!ok.length)return [];
+    var max=ok.reduce(function(m,x){return x.date>m?x.date:m},'');
+    var c=new Date(max+'T00:00:00Z');c.setUTCDate(c.getUTCDate()-2);
+    var cut=c.toISOString().slice(0,10);
+    return ok.filter(function(x){return x.date>=cut}).map(function(x){return {k:kind,d:x.date,t:String(x.title)}});
+  }
+  function loadInference(){
+    var box=$('inf-tk');if(!box)return;
+    fetch('/daily/inference.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():Promise.reject()}).then(function(d){
+      var seen={},rows=recentRows(d.papers,'论文').concat(recentRows(d.news,'资讯')).filter(function(r){
+        var key=r.t.toLowerCase().replace(/\s+/g,' ').trim();if(seen[key])return false;seen[key]=1;return true;
+      });
+      if(!rows.length)return;
+      rows=rows.map(function(r,i){r.i=i;return r}).sort(function(a,b){return a.d<b.d?1:a.d>b.d?-1:a.i-b.i}).slice(0,40);
+      var li=function(hide){return rows.map(function(r){return '<li'+(hide?' aria-hidden="true"':'')+'><span class="k">'+r.k+' '+r.d.slice(5)+'</span><span class="t">'+esc(r.t)+'</span></li>'}).join('')};
+      box.innerHTML='<ul>'+li(false)+'</ul>';box.hidden=false;
+      var desc=$('inf-desc');if(desc)desc.hidden=true;
+      var ul=box.firstChild;
+      if(ul.scrollHeight>box.clientHeight+1){
+        ul.innerHTML=li(false)+li(true);
+        box.style.setProperty('--tk-dur',Math.max(20,rows.length*2.6)+'s');
+        box.classList.add('run');
+      }else box.style.height='auto';
+    }).catch(function(){});
+  }
+
   fetch('/api/site',{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){
-    renderHero(d);renderAreas(d);renderLife(d);renderOffers(d);renderContact(d);
+    renderHero(d);renderAreas(d);renderLife(d);renderOffers(d);renderContact(d);loadInference();
   }).catch(function(){$('hero').innerHTML='<h1>页面内容加载失败</h1><p class="lead">请刷新重试。</p>'});
 })();
 </script>
