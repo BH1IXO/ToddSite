@@ -99,6 +99,17 @@ let n = 0; const ok = (cond, msg) => { assert(cond, msg); n++; };
   ok(q.ok === false && q.quarantined && q.reasons.includes('私事'), '整篇私密应被隔离');
   ok(!KB.has('f'), '被隔离的文档不应入库');
   ok(KB.quarantined().length >= 1, '隔离区留底');
+  // 老的段文件没有 .map：追加新内容时要重建偏移表，旧块仍能按正确位置读出来
+  {
+    const legacy = tmp('kb-legacy-');
+    const LB = require('../lib/kb/store').open(legacy);
+    LB.addDoc({ id: 'old', title: '旧文档', text: '旧内容里的关键词是蓝鲸协议。' });
+    fs.rmSync(path.join(legacy, 'docs', 'seg-1.map'));
+    LB.addDoc({ id: 'new', title: '新文档', text: '新内容里的关键词是赤狐协议。' });
+    const a = LB.search('蓝鲸协议', 2)[0], b = LB.search('赤狐协议', 2)[0];
+    ok(a && a.text.includes('蓝鲸协议'), '重建偏移表后旧块可读');
+    ok(b && b.text.includes('赤狐协议'), '重建偏移表后新块可读');
+  }
   // 超大单篇拒绝
   const big = KB.add({ id: 'g', title: '太大', trust: 'chat', text: 'x'.repeat(8 * 1024 * 1024 + 1) });
   ok(big.ok === false && /8MB/.test(big.error), '超过 8MB 应拒绝');
