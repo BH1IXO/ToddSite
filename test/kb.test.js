@@ -90,6 +90,10 @@ let n = 0; const ok = (cond, msg) => { assert(cond, msg); n++; };
   const st = KB.compact();
   ok(st.docs === 4 && st.chunks >= 4, '整理后文档数正确：' + JSON.stringify(st));
   ok(KB.search('硕士生导师', 3)[0].doc === 'c', '整理后检索仍正确');
+  // 标题里也不能带隐私
+  KB.add({ id: 't', title: '联系人 13800138000 的档案', trust: 'chat', text: '正文是正常的工作经历。' });
+  ok(!KB.list().find(x => x.id === 't').title.includes('13800138000'), '标题也要脱敏');
+  ok(!KB.search('联系人档案', 3).some(h => h.title.includes('13800138000')), '检索结果标题也要脱敏');
   // 整篇私密内容：隔离，不入库
   const q = KB.add({ id: 'f', title: '私事', trust: 'chat', text: '我爸爸住院了，别外传。' });
   ok(q.ok === false && q.quarantined && q.reasons.includes('私事'), '整篇私密应被隔离');
