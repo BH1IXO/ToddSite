@@ -38,27 +38,35 @@ function localKB() {
 }
 
 // ---- 远程模式 ----
-async function tokenOf(a) {
-  if (a.token && a.token !== true) return a.token;
-  const tf = path.join(os.homedir(), '.hermes', 'aiucc_token');
-  try { const t = fs.readFileSync(tf, 'utf-8').trim(); if (t) return t; } catch (e) {}
+const TOKEN_FILE = path.join(os.homedir(), '.hermes', 'aiucc_token');
+async function login(a) {
   const pw = process.env.ADMIN_PASSWORD || '';
-  if (!pw) die('没有 token，也没设置 ADMIN_PASSWORD 环境变量');
+  if (!pw) return '';
   const url = (a.url && a.url !== true ? a.url : 'https://aiucc.cn').replace(/\/$/, '');
   const r = await fetch(url + '/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pw }) });
   if (!r.ok) die('登录失败：' + r.status + ' ' + (await r.text()).slice(0, 200));
   const j = await r.json();
   if (!j.token) die('登录没有返回 token');
+  // 只有默认线上地址才把 token 存起来；本地调试不覆盖真实 token
+  if (!(a.url && a.url !== true)) { try { fs.mkdirSync(path.dirname(TOKEN_FILE), { recursive: true }); fs.writeFileSync(TOKEN_FILE, j.token); } catch (e) {} }
   return j.token;
 }
-async function remote(a, method, p, body) {
+async function tokenOf(a) {
+  if (a.token && a.token !== true) return a.token;
+  // 密码优先于缓存 token：服务重启后旧 token 一定失效，而密码总是能用
+  if (process.env.ADMIN_PASSWORD) return login(a);
+  try { const t = fs.readFileSync(TOKEN_FILE, 'utf-8').trim(); if (t) return t; } catch (e) {}
+  die('没有 token，也没设置 ADMIN_PASSWORD 环境变量');
+}
+async function remote(a, method, p, body, retried) {
   const base = (a.url && a.url !== true ? a.url : 'https://aiucc.cn').replace(/\/$/, '');
   const r = await fetch(base + p, {
     method,
-    headers: Object.assign({ 'Content-Type': 'application/json' }, body ? { 'x-token': await tokenOf(a) } : {}),
+    headers: Object.assign({ 'Content-Type': 'application/json', 'x-token': await tokenOf(a) }),
     body: body ? JSON.stringify(body) : undefined,
   });
   const text = await r.text();
+  if (r.status === 401 && !retried && process.env.ADMIN_PASSWORD) { await login(a); return remote(a, method, p, body, true); }
   let j = null; try { j = JSON.parse(text); } catch (e) {}
   if (!r.ok) die('接口返回 ' + r.status + '：' + (j && j.error ? j.error : text.slice(0, 300)));
   return j;

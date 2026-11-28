@@ -40,6 +40,8 @@ let n = 0; const ok = (cond, msg) => { assert(cond, msg); n++; };
   // 手动标记
   const marked = S.clean('这段是内部讨论\n\n[私密] 别发出去\n', { trust: 'public' });
   ok(marked.quarantined.length === 1 && marked.quarantined[0].reasons.includes('标记为私密'), '手动 [私密] 标记应隔离');
+  const courseTalk = S.clean('必备技能：Token 经济：协议设计、密码学、经济学、安全。', { trust: 'public' });
+  ok(courseTalk.quarantined.length === 0, '公开课程里的 Token 经济不应误判为密钥');
   // 出入口复用的脱敏
   ok(!S.redact('联系我 13900139000').includes('13900139000'), '响应脱敏应抹手机号');
 }
@@ -80,6 +82,10 @@ let n = 0; const ok = (cond, msg) => { assert(cond, msg); n++; };
   // 增量写入
   KB.add({ id: 'e', title: 'FDE 现场改造', trust: 'public', text: 'FDE 是进到客户现场做 AI 改造的方式。' });
   ok(KB.search('FDE 现场改造', 3)[0].doc === 'e', '增量写入后应立即可检索');
+  // 同一 id 覆盖：旧内容作废，不和新内容同时命中
+  KB.add({ id: 'a', title: 'Web3 产品经理必修课（改版）', trust: 'public', text: '改版后只保留课程大纲：意图工程、上下文、组合工作流。' });
+  ok(!KB.search('区块链', 3).some(h => h.text.includes('从零设计')), '覆盖后旧内容不应命中');
+  ok(KB.search('课程大纲 意图工程', 3).some(h => h.doc === 'a'), '覆盖后新内容应命中');
   // 合并整理后仍正确
   const st = KB.compact();
   ok(st.docs === 4 && st.chunks >= 4, '整理后文档数正确：' + JSON.stringify(st));
