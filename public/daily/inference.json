@@ -1,0 +1,236 @@
+{
+ "updated": "2026-11-28 22:53",
+ "updated_iso": "2026-11-28T22:53:20.090735+08:00",
+ "papers": [
+  {
+   "group": "KV cache / 投机解码",
+   "title": "DFly2: Turbocharging Long-Context Speculative Decoding by Sharing the Target's Sparsity",
+   "date": "2026-11-25",
+   "url": "http://arxiv.org/abs/2611.34776v1",
+   "summary": "To avoid the quadratic cost of dense attention over long contexts, models such as DeepSeek-V4 and Hy4 have turned natively sparse, and speculative decoding, which matters most where decoding is slowest, increasingly runs on them. Their drafters, however, still"
+  },
+  {
+   "group": "KV cache / 投机解码",
+   "title": "FlyingStart: Learned Cross-Token Warm Starts for Fixed-Point Decoding in Recurrent-Depth Language Models",
+   "date": "2026-11-25",
+   "url": "http://arxiv.org/abs/2611.34492v1",
+   "summary": "Recurrent-depth language models generate each token by iterating a shared block of layers until its hidden state converges. Inference methods for these models decide when to stop the iteration, yet every token still starts from random noise and pays the full c"
+  },
+  {
+   "group": "KV cache / 投机解码",
+   "title": "Improving Tail-Augmented Speculative Drafting with Hidden State Mixing and Gradient Detach",
+   "date": "2026-11-25",
+   "url": "http://arxiv.org/abs/2611.34092v1",
+   "summary": "Multi-token prediction (MTP) modules and EAGLE-style drafters support efficient speculative decoding by reusing target-model hidden states. Their autoregressive use, however, introduces a training-inference mismatch: training supplies sequences of hidden state"
+  },
+  {
+   "group": "KV cache / 投机解码",
+   "title": "Looped Models are Fast Multi-Token Predictors",
+   "date": "2026-11-25",
+   "url": "http://arxiv.org/abs/2611.33896v1",
+   "summary": "Looped language models can adapt computation for predicting a token without a proportional rescaling in unique model parameters by adjusting the number of loops. This property has been used for self-speculative decoding, taking shallow loops as fast drafters a"
+  },
+  {
+   "group": "KV cache / 投机解码",
+   "title": "State Space Attention: Learning Context-Dependent Memory Retention",
+   "date": "2026-11-25",
+   "url": "http://arxiv.org/abs/2611.33625v1",
+   "summary": "Standard attention's key-value cache grows linearly with context length. Bounding it raises the question of what a sequence model should retain for long-context reasoning. We argue this choice should be learned, and introduce State Space Attention (SSA), which"
+  },
+  {
+   "group": "量化 / 蒸馏",
+   "title": "Repairing the Trustworthiness of Distilled Language Models",
+   "date": "2026-11-25",
+   "url": "http://arxiv.org/abs/2611.34831v1",
+   "summary": "Knowledge distillation enables the deployment of large language models through smaller student models, but the compression process can introduce regressions in trustworthiness even when downstream performance is preserved. Repairing such failures is challengin"
+  },
+  {
+   "group": "量化 / 蒸馏",
+   "title": "Verifiable but Not Predictable: What Sentence Embeddings Know About Propositional Decomposition",
+   "date": "2026-11-25",
+   "url": "http://arxiv.org/abs/2611.33668v1",
+   "summary": "Quality control for proposition decomposition by large language models (LLMs) raises two asymmetric questions. After decomposition, one can verify: given a sentence and a candidate proposition, does the proposition belong to that sentence? Before decomposition"
+  },
+  {
+   "group": "长上下文加速",
+   "title": "MINE: A Training-Free Defense against Indirect Prompt Injection via Mutual Information and Embedding Variance",
+   "date": "2026-11-25",
+   "url": "http://arxiv.org/abs/2611.34188v1",
+   "summary": "Existing defenses against indirect prompt injection in retrieval-augmented generation (RAG) are inherently reactive: prompt-engineering methods are often overridden by the injected instructions, while supervised detectors must be retrained for each new attack "
+  },
+  {
+   "group": "长上下文加速",
+   "title": "Stable Gated DeltaNet-2: Understanding and Mitigating Recurrent State Instability",
+   "date": "2026-11-25",
+   "url": "http://arxiv.org/abs/2611.34051v1",
+   "summary": "Linear attention offers an efficient solution for long-sequence modeling via linear complexity and fixed-size recurrent states. Gated DeltaNet-2 (GDN-2) introduces independent channel-wise control over erasure and writing, enhancing state-update expressiveness"
+  },
+  {
+   "group": "量化 / 蒸馏",
+   "title": "AIChipBench: Benchmarking LLM Agents for Automated AI Accelerator Design",
+   "date": "2026-11-24",
+   "url": "http://arxiv.org/abs/2611.33093v1",
+   "summary": "A language-model decoder carries state between decoding steps, and in hardware a wrong state update can leave the current token correct and corrupt the output several tokens later, so a design can pass output tests and still be wrong. AIChipBench asks what LLM"
+  },
+  {
+   "group": "量化 / 蒸馏",
+   "title": "Can a Frontier LLM Repair a Quantized Network by Tool-Free Weight-Space Programming?",
+   "date": "2026-11-24",
+   "url": "http://arxiv.org/abs/2611.33031v1",
+   "summary": "We give four large language models (LLMs) of the Claude family the complete weights of a 20k-parameter CIFAR-10 CNN as text and ask them to produce a 4-bit network without tools, data or the ability to run inference. Standard round-to-nearest (RTN) quantizatio"
+  },
+  {
+   "group": "量化 / 蒸馏",
+   "title": "Measuring Layer-wise Intrinsic Dimensionality of FFNs in LLMs via PCA",
+   "date": "2026-11-24",
+   "url": "http://arxiv.org/abs/2611.32782v1",
+   "summary": "Modern large language models (LLMs) keep the feed-forward network (FFN) intermediate width identical across every layer, a convention inherited from the original Transformer. Yet mechanistic work suggests layers at different depths do qualitatively different w"
+  },
+  {
+   "group": "服务框架 / 调度",
+   "title": "Scalable Placement for Disaggregated LLM Serving on Heterogeneous Edge Fleets",
+   "date": "2026-11-24",
+   "url": "http://arxiv.org/abs/2611.32881v1",
+   "summary": "Serving large language models (LLMs) at the edge is increasingly desirable for privacy-sensitive applications and scenarios that require data to remain on local devices. However, edge environments are constrained by limited computational resources and exhibit "
+  },
+  {
+   "group": "长上下文加速",
+   "title": "Leto: Utility-Centric Agent Memory",
+   "date": "2026-11-24",
+   "url": "http://arxiv.org/abs/2611.33005v1",
+   "summary": "Large language model (LLM) agents rely on external memory to retain and reuse information across interactions. Existing memory systems treat memory as a record of the past and evaluate it by fidelity to the conversation. However, the value of memory lies in wh"
+  },
+  {
+   "group": "服务框架 / 调度",
+   "title": "NoeVera: Can Knowledge Guide Experiments and Experiments Refine Knowledge?",
+   "date": "2026-11-22",
+   "url": "http://arxiv.org/abs/2611.29255v1",
+   "summary": "With the growing demand for large language model (LLM) services, optimizing LLM serving systems is becoming increasingly complex, and the bottleneck is no longer predicting how a given configuration will perform. The harder problem is deciding what to investig"
+  },
+  {
+   "group": "服务框架 / 调度",
+   "title": "TideCache: Efficient Hybrid LLM Serving with Transparent Cache Management and Layer-Wise Streaming",
+   "date": "2026-11-19",
+   "url": "http://arxiv.org/abs/2611.26619v1",
+   "summary": "Hybrid architectures have become mainstream among open-weight language models. Their global-attention and bounded-state layers maintain heterogeneous caches whose demands vary with context length and concurrency. We present TideCache, a serving system on CPU--"
+  },
+  {
+   "group": "服务框架 / 调度",
+   "title": "Berth: SLO-Preserving GPU Sharing Without New Preemption",
+   "date": "2026-11-18",
+   "url": "http://arxiv.org/abs/2611.25091v1",
+   "summary": "Inference services keep GPUs reserved for their worst-case load, and most of that capacity sits idle. Filling it with best-effort work such as training is the obvious remedy, and latency is why it rarely happens: on a shared GPU, a request that must finish wit"
+  },
+  {
+   "group": "服务框架 / 调度",
+   "title": "LEDGE: An Efficient Simulator for Distributed LLM Serving on Heterogeneous Edge Devices",
+   "date": "2026-11-18",
+   "url": "http://arxiv.org/abs/2611.24085v1",
+   "summary": "Evaluating distributed large language model (LLM) serving on heterogeneous edge devices requires exploring diverse model partitions, device placements, and network conditions, making repeated physical experiments costly. An efficient simulator for edge LLM ser"
+  }
+ ],
+ "frameworks": [
+  {
+   "name": "vLLM",
+   "repo": "vllm-project/vllm",
+   "desc": "高吞吐推理引擎，PagedAttention 发源地",
+   "releases": [
+    {
+     "tag": "v0.34.0",
+     "date": "2026-11-16"
+    },
+    {
+     "tag": "v0.33.0rc3",
+     "date": "2026-11-02"
+    }
+   ]
+  },
+  {
+   "name": "SGLang",
+   "repo": "sgl-project/sglang",
+   "desc": "结构化生成 + RadixAttention，长上下文强",
+   "releases": [
+    {
+     "tag": "v0.5.23",
+     "date": "2026-11-02"
+    },
+    {
+     "tag": "v0.5.22",
+     "date": "2026-10-19"
+    }
+   ]
+  },
+  {
+   "name": "TensorRT-LLM",
+   "repo": "NVIDIA/TensorRT-LLM",
+   "desc": "NVIDIA 官方，编译优化极致性能",
+   "releases": [
+    {
+     "tag": "v1.3.0",
+     "date": "2026-11-20"
+    },
+    {
+     "tag": "v1.4.0rc4",
+     "date": "2026-11-18"
+    }
+   ]
+  },
+  {
+   "name": "llama.cpp",
+   "repo": "ggml-org/llama.cpp",
+   "desc": "端侧/CPU 推理标杆，GGUF 量化",
+   "releases": [
+    {
+     "tag": "b12833",
+     "date": "2026-11-28"
+    },
+    {
+     "tag": "b12832",
+     "date": "2026-11-28"
+    }
+   ]
+  },
+  {
+   "name": "TGI",
+   "repo": "huggingface/text-generation-inference",
+   "desc": "HuggingFace 官方推理服务",
+   "releases": [
+    {
+     "tag": "v3.3.7",
+     "date": "2025-12-19"
+    },
+    {
+     "tag": "v3.3.6",
+     "date": "2025-09-17"
+    }
+   ]
+  }
+ ],
+ "news": [
+  {
+   "title": "vLLM 本地部署大模型完全指南：性能提升23倍的实战教程 ...",
+   "snippet": "2025年9月13日 · 本文详细介绍了使用vLLM在本地部署高性能大语言模型的全流程，涵盖环境准备、项目初始化、模型下载与管理、 …"
+  },
+  {
+   "title": "大模型推理框架vLLM原理详解！ - 知乎",
+   "snippet": "2025年9月22日 · vLLM 引入了 Continuous Batching，允许 不同的请求同时在一个 batch 中运行： 已在 decode 阶段的老请求，和刚 …"
+  }
+ ],
+ "sources": [
+  {
+   "name": "arXiv API",
+   "url": "https://export.arxiv.org/api/query",
+   "mode": "全自动·每日"
+  },
+  {
+   "name": "GitHub Releases API",
+   "url": "https://api.github.com",
+   "mode": "全自动·每日"
+  },
+  {
+   "name": "Bing CN 深度文章",
+   "url": "https://cn.bing.com",
+   "mode": "全自动·每日"
+  }
+ ]
+}

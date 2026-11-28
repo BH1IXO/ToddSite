@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>推理优化专区 · 刘涛 Todd</title>
+<link rel="stylesheet" href="/theme.css">
+<style>
+  .wrap{max-width:1000px;margin:0 auto;padding:0 24px}
+  .hero{padding:64px 0 32px;border-bottom:1px solid var(--line)}
+  .hero h1{font-size:38px;margin:0 0 12px;letter-spacing:-.02em}
+  .hero p{color:var(--muted);font-size:15px;line-height:1.7;margin:0;max-width:680px}
+  .stamp{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);
+         background:var(--soft);padding:6px 13px;border-radius:100px;margin-top:18px;font-variant-numeric:tabular-nums}
+  .dot{width:6px;height:6px;border-radius:50%;background:#3ec98a;box-shadow:0 0 0 3px rgba(62,201,138,.18)}
+  section{padding:44px 0;border-bottom:1px solid var(--line)}
+  section:last-child{border-bottom:none}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:.13em;color:var(--muted);
+     margin:0 0 22px;font-weight:600}
+  .fw{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+  .fwcard{border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+  .fwcard .nm{font-size:14.5px;font-weight:600;margin-bottom:4px}
+  .fwcard .ds{font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:12px;min-height:34px}
+  .rel{display:flex;justify-content:space-between;font-size:12.5px;
+       font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+       padding:5px 0;border-top:1px solid var(--line)}
+  .rel span:first-child{color:var(--muted)}
+  .rel .tagnew{color:#3ec98a;font-size:11px}
+  .pgrid{margin:0}
+  .pt{border-bottom:1px solid var(--line);padding:18px 0}
+  .pt:last-child{border-bottom:none}
+  .pt .meta{display:flex;align-items:center;gap:10px;margin-bottom:7px}
+  .pt .grp{font-size:11px;padding:2.5px 8px;border-radius:4px;background:var(--soft);color:var(--muted)}
+  .pt .dt{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .pt a{font-size:15px;line-height:1.5;font-weight:500;text-decoration:none;color:inherit;display:block}
+  .pt a:hover{color:#c2703a}
+  .pt .sm{font-size:13px;color:var(--muted);line-height:1.65;margin-top:6px}
+  .news li{padding:12px 0;border-bottom:1px solid var(--line);list-style:none}
+  .news li:last-child{border-bottom:none}
+  .news ul{padding:0;margin:0}
+  .news a{font-size:14px;line-height:1.5;text-decoration:none;color:inherit;font-weight:500}
+  .news a:hover{color:#c2703a}
+  .news .snip{color:var(--muted);font-size:12.5px;line-height:1.6;margin-top:4px}
+  .srcs{display:flex;flex-wrap:wrap;gap:10px}
+  .src{font-size:12px;color:var(--muted);background:var(--soft);padding:5px 11px;border-radius:6px}
+  .filter{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+  .filter button{font-size:12.5px;padding:6px 14px;border-radius:100px;border:1px solid var(--line);
+    background:none;color:var(--muted);cursor:pointer;font-family:inherit;transition:.15s}
+  .filter button.on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+  @media(max-width:720px){.hero h1{font-size:28px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <h1>推理优化专区</h1>
+    <p>大模型推理加速的论文、框架版本和工程实践。每天抓一次 arXiv 新提交、主流推理引擎的 release，以及中文圈的深度文章。不进博客，单独放这儿。</p>
+    <div class="stamp"><span class="dot"></span><span id="stamp">加载中…</span></div>
+  </div>
+
+  <section>
+    <h2>推理框架 · 最新版本</h2>
+    <div class="fw" id="fw"></div>
+  </section>
+
+  <section>
+    <h2>最新论文</h2>
+    <div class="filter" id="filter">
+      <button class="on" data-g="all">全部</button>
+    </div>
+    <div class="pgrid" id="papers"></div>
+  </section>
+
+  <section>
+    <h2>工程实践与资讯</h2>
+    <ul class="news" id="news"></ul>
+  </section>
+
+  <section>
+    <h2>数据来源</h2>
+    <div class="srcs" id="srcs"></div>
+  </section>
+</div>
+
+<script>
+let ALL = [];
+
+function renderPapers(g) {
+  const list = g === 'all' ? ALL : ALL.filter(p => p.group === g);
+  document.getElementById('papers').innerHTML = list.map(p => `
+    <div class="pt">
+      <div class="meta"><span class="grp">${p.group}</span><span class="dt">${p.date}</span></div>
+      <a href="${p.url}" target="_blank" rel="noopener">${p.title}</a>
+      ${p.summary ? `<div class="sm">${p.summary}</div>` : ''}
+    </div>`).join('');
+}
+
+fetch('/daily/inference.json').then(r => r.json()).then(d => {
+  document.getElementById('stamp').textContent = '更新于 ' + d.updated;
+
+  document.getElementById('fw').innerHTML = d.frameworks.map(f => `
+    <div class="fwcard">
+      <div class="nm">${f.name}</div>
+      <div class="ds">${f.desc}</div>
+      ${(f.releases || []).map((r, i) => `<div class="rel">
+        <span>${r.tag || '—'}</span>
+        <span>${r.date}${i === 0 ? ' <span class="tagnew">最新</span>' : ''}</span>
+      </div>`).join('') || '<div class="rel"><span>暂无数据</span><span></span></div>'}
+    </div>`).join('');
+
+  ALL = d.papers || [];
+  const groups = [...new Set(ALL.map(p => p.group))];
+  document.getElementById('filter').innerHTML =
+    `<button class="on" data-g="all">全部 ${ALL.length}</button>` +
+    groups.map(g => `<button data-g="${g}">${g}</button>`).join('');
+  document.getElementById('filter').addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    document.querySelectorAll('#filter button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    renderPapers(b.dataset.g);
+  });
+  renderPapers('all');
+
+  document.getElementById('news').innerHTML = (d.news || []).map(n => `
+    <li><a href="https://cn.bing.com/search?q=${encodeURIComponent(n.title)}" target="_blank" rel="noopener">${n.title}</a>
+    ${n.snippet ? `<div class="snip">${n.snippet}</div>` : ''}</li>`).join('');
+
+  document.getElementById('srcs').innerHTML = d.sources.map(s =>
+    `<span class="src">${s.name} · ${s.mode}</span>`).join('');
+}).catch(e => {
+  document.getElementById('stamp').textContent = '数据加载失败';
+  console.error(e);
+});
+</script>
+</body>
+</html>
