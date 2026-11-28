@@ -195,9 +195,9 @@ footer a{display:inline-block;padding:12px 0;margin:-12px 0}
     var rows=list.map(function(a,i){
       var pts=(a.points||[]).map(function(x){return "<li>"+esc(x)+"</li>"}).join('');
       var its=(a.items||[]).map(function(it){
-        var u=safeUrl(it.url);
-        var inner="<b>"+esc(it.name)+(u?" ↗":"")+"</b>"+(it.desc?"<p>"+esc(it.desc)+"</p>":"");
-        return "<li>"+(u?"<a href='"+esc(u)+"' target='_blank' rel='noopener noreferrer'>"+inner+"</a>":"<div>"+inner+"</div>")+"</li>";
+        var ext=safeUrl(it.url),loc=/^\/[^\/\\]/.test(it.url||'')?it.url:'',u=ext||loc;
+        var inner="<b>"+esc(it.name)+(ext?" ↗":(loc?" →":""))+"</b>"+(it.desc?"<p>"+esc(it.desc)+"</p>":"");
+        return "<li>"+(u?"<a href='"+esc(u)+"'"+(ext?" target='_blank' rel='noopener noreferrer'":"")+">"+inner+"</a>":"<div>"+inner+"</div>")+"</li>";
       }).join('');
       return "<article class=dir><div class=dir-l><span class=tag>"+pad2(i+1)+" / "+esc(a.key||'')+"</span><h3>"+esc(a.title)+"</h3><p>"+esc(a.desc)+"</p>"+(pts?"<ul class=chips>"+pts+"</ul>":"")+"</div><div class=dir-r>"+(its?"<ul class=mini>"+its+"</ul>":"<p class=empty>具体项目整理中</p>")+"</div></article>";
     }).join('');
