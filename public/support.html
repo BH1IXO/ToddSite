@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang='zh-CN'>
+<head>
+<meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>打赏与支持 · 刘涛 Todd</title>
+<meta name='description' content='请我喝杯咖啡：自愿打赏会用在哪里的说明。'>
+<style>
+:root{--bg:#FFFFFF;--fg:#111111;--mute:#6B6B72;--line:#E4E4E7;--card:#FFFFFF;--soft:#F7F7F8;--w:48rem;--mono:'Geist Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--sans:'Geist','PingFang SC','Noto Sans SC','Microsoft YaHei',-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme='light']){--bg:#0B0B0D;--fg:#F2F2F3;--mute:#9A9AA2;--line:#26262B;--card:#101013;--soft:#16161A;color-scheme:dark}}
+:root[data-theme='dark']{--bg:#0B0B0D;--fg:#F2F2F3;--mute:#9A9AA2;--line:#26262B;--card:#101013;--soft:#16161A;color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.85;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-underline-offset:3px}
+:focus-visible{outline:2px solid var(--fg);outline-offset:3px}
+.frame{max-width:var(--w);margin:0 auto;padding-left:clamp(18px,3vw,40px);padding-right:clamp(18px,3vw,40px)}
+header.top{border-bottom:1px solid var(--line)}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:56px}
+.logo{font-weight:600;letter-spacing:-.02em;text-decoration:none}
+.back{font-size:14px;color:var(--mute);text-decoration:none;display:inline-flex;align-items:center;min-height:44px}
+.back:hover{color:var(--accent,var(--fg))}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent,var(--mute));margin:40px 0 0}
+h1{font-size:clamp(2rem,5vw,3rem);line-height:1.2;letter-spacing:-.04em;margin:12px 0 0;font-weight:600}
+.lead{color:var(--mute);margin:16px 0 0}
+h2{font-size:20px;line-height:1.5;letter-spacing:-.03em;margin:44px 0 0;padding-top:28px;border-top:1px solid var(--line);font-weight:600}
+ul{margin:14px 0 0;padding:0;list-style:none}
+li{padding:14px 0;border-bottom:1px solid var(--line)}
+li b{display:block;font-weight:600}
+li span{color:var(--mute);font-size:15px}
+.btn{display:inline-flex;align-items:center;min-height:44px;margin-top:28px;font-size:15px;font-weight:500;text-decoration:none;border:1px solid var(--fg);border-radius:4px;padding:8px 22px}
+.btn.solid{background:var(--fg);color:var(--bg)}
+.btn.solid:hover{background:transparent;color:var(--fg)}
+footer{margin-top:44px;padding-top:22px;padding-bottom:72px;border-top:1px solid var(--line);font-family:var(--mono);font-size:12px;color:var(--mute)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<link rel='stylesheet' href='/theme.css'>
+</head>
+<body>
+<header class='top'><div class='frame bar'><a class='logo' href='/'>刘涛 Todd</a><a class='back' href='/'>← 返回首页</a></div></header>
+<main class='frame'>
+<p class='kicker'>Support</p>
+<h1>请我喝杯咖啡</h1>
+<p class='lead'>这个站点由我自己维护。如果里面的内容对你有帮助，可以用一杯咖啡的钱支持它继续运转。完全自愿，下面说清楚这笔钱会用在哪里。</p>
+<h2>打赏会用在哪里</h2>
+<ul>
+<li><b>服务器与域名</b><span>站点跑在自己的云服务器上，域名、服务器和带宽都是按年付费的固定开销。</span></li>
+<li><b>AI 分身的模型调用费</b><span>「跟我聊聊」里的分身对话，每一条回答都要向大模型服务商按量付费，这是站点持续的开销之一。</span></li>
+<li><b>内容的整理与更新</b><span>博客、课程，以及每天更新的算力、推理优化专区，都要花时间去读、去筛、去写。</span></li>
+</ul>
+<h2>几点说明</h2>
+<ul>
+<li><b>完全自愿</b><span>不打赏不影响浏览任何内容，也不影响使用 AI 分身对话。</span></li>
+<li><b>金额随意</b><span>没有最低额度，一杯咖啡的心意就够了。</span></li>
+<li><b>没有附带条件</b><span>打赏是单纯的支持，不附带咨询、定制或优先服务。需要合作请看首页的<a href='/#services'>「可以怎么合作」</a>，或者直接<a href='/#contact'>联系我</a>。</span></li>
+<li><b>支付方式</b><span>支持微信和支付宝，点下面的按钮扫码即可。</span></li>
+</ul>
+<a class='btn solid' href='/support' data-tip>扫码打赏</a>
+</main>
+<footer class='frame'>© 刘涛 Todd</footer>
+<script src='/tip.js' defer></script>
+<script src='/theme.js'></script>
+</body>
+</html>

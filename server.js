@@ -497,6 +497,7 @@ http.createServer(async (req, res) => {
     if (url === '/compute') url = '/compute.html';
     if (url === '/inference') url = '/inference.html';
     if (url === '/k12') url = '/k12.html';
+    if (url === '/support') url = '/support.html';
     if (url === '/chat') url = '/chat.html';
     if (/^\/post\/[a-z0-9-]+$/.test(url)) url = '/post.html';
     const file = path.normalize(path.join(PUB, url));
